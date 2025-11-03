@@ -7,13 +7,16 @@ const router = Router();
 // Get all products (public)
 router.get('/', async (req, res) => {
   try {
+    console.log('📦 GET ALL PRODUCTS request');
     const result = await query(`
       SELECT * FROM products 
       ORDER BY id DESC
     `);
+    const products = result.rows as any[];
+    console.log('   ✅ Found', products.length, 'products');
     res.json(result.rows);
   } catch (error) {
-    console.error('Get products error:', error);
+    console.error('   ❌ Get products error:', error);
     res.status(500).json({ error: 'Failed to fetch products' });
   }
 });

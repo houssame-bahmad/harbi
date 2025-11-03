@@ -2,6 +2,12 @@ import { User, Product, Category, Order, OrderStatus, PaymentStatus, UserRole } 
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://harbi-production.up.railway.app/api';
 
+// Log API configuration on load
+console.log('🔧 API CONFIGURATION:');
+console.log('   API_URL:', API_URL);
+console.log('   VITE_API_URL env:', import.meta.env.VITE_API_URL || 'NOT SET');
+console.log('');
+
 // Get auth token from localStorage
 const getAuthToken = (): string | null => {
   return localStorage.getItem('authToken');
@@ -20,23 +26,42 @@ const removeAuthToken = (): void => {
 // API request helper
 async function apiRequest(endpoint: string, options: RequestInit = {}) {
   const token = getAuthToken();
+  const fullUrl = `${API_URL}${endpoint}`;
+  
+  console.log(`🌐 API REQUEST: ${options.method || 'GET'} ${fullUrl}`);
+  if (token) {
+    console.log('   🔑 Auth token:', '***' + token.slice(-10));
+  } else {
+    console.log('   ⚠️  No auth token');
+  }
+  
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...(token && { Authorization: `Bearer ${token}` }),
     ...options.headers,
   };
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  try {
+    const response = await fetch(fullUrl, {
+      ...options,
+      headers,
+    });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Request failed' }));
-    throw new Error(error.error || `HTTP ${response.status}`);
+    console.log(`   📡 Response status: ${response.status} ${response.statusText}`);
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Request failed' }));
+      console.log('   ❌ Request failed:', error.error);
+      throw new Error(error.error || `HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('   ✅ Request successful');
+    return data;
+  } catch (error: any) {
+    console.error('   ❌ Network error:', error.message);
+    throw error;
   }
-
-  return response.json();
 }
 
 // Delay helper
@@ -45,29 +70,35 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 export const api = {
   // Auth
   login: async (email: string, password: string): Promise<{ token: string; user: User }> => {
+    console.log('🔐 LOGIN attempt for:', email);
     const data = await apiRequest('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
+    console.log('   ✅ Login successful, saving token');
     setAuthToken(data.token);
     return data;
   },
 
   register: async (email: string, password: string, fullName: string, phoneNumber: string): Promise<{ token: string; user: User }> => {
+    console.log('📝 REGISTER attempt for:', email);
     const data = await apiRequest('/auth/register', {
       method: 'POST',
       body: JSON.stringify({ email, password, fullName, phoneNumber }),
     });
+    console.log('   ✅ Registration successful, saving token');
     setAuthToken(data.token);
     return data;
   },
 
   logout: async (): Promise<void> => {
+    console.log('👋 LOGOUT - removing token');
     removeAuthToken();
   },
 
   // Products
-  getProducts: async (): Promise<Product[]> => {
+  getAllProducts: async (): Promise<Product[]> => {
+    console.log('📦 FETCHING all products');
     return apiRequest('/products');
   },
 
