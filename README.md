@@ -153,7 +153,7 @@ The project includes PostgreSQL schema and seed files in the `db/` folder:
 | Styling | Tailwind CSS + Custom CSS |
 | State | React Context API |
 | Build | Vite 6.2.0 |
-| Database | PostgreSQL (production) |
+| Database | MySQL (production) |
 | Mock API | localStorage (development) |
 
 ## Security Notes
@@ -214,22 +214,55 @@ parapharmacie-store/
 
 ### Production Deployment (NEW!)
 
-This project is now ready for production deployment:
+This project is now ready for production deployment with **multiple hosting options**:
 
-**Backend:** Deploy to Railway (Express.js + PostgreSQL)
-**Frontend:** Deploy to Vercel or Netlify (React + Vite)
+### Option 1: Hybrid Deployment (Hostinger + Railway) 🌟 RECOMMENDED
+**Best combination:** Professional subdomain for frontend + Powerful Railway backend!
+- **Frontend:** `store.yourdomain.com` (Hostinger subdomain)
+- **Backend:** `your-app.up.railway.app` (Railway)
+- **Database:** MySQL on Railway (free managed database)
 
-### Quick Deploy:
-1. Read **[DEPLOYMENT-CHECKLIST.md](./DEPLOYMENT-CHECKLIST.md)** for step-by-step guide
-2. Deploy backend to **Railway** (~10 minutes)
-3. Deploy frontend to **Vercel** or **Netlify** (~5 minutes)
-4. Total time: **~30 minutes** to go live! 🚀
+**Quick Start:**
+1. Read **[HYBRID-DEPLOY.md](./HYBRID-DEPLOY.md)** - Complete guide (25 minutes)
+2. Deploy backend to Railway with managed MySQL
+3. Deploy frontend to your Hostinger subdomain
+4. Total time: **~25 minutes** to go live! 🚀
 
-### Deployment Guides:
+### Option 2: Full Hostinger Deployment
+Deploy both frontend and backend on Hostinger subdomains:
+- **Frontend:** `store.yourdomain.com`
+- **Backend:** `api.yourdomain.com` (requires Node.js hosting)
+- **Database:** MySQL on Hostinger
+
+**Quick Start:**
+1. Read **[SUBDOMAIN-QUICK.md](./SUBDOMAIN-QUICK.md)** - 30-minute guide
+2. Or **[SUBDOMAIN-DEPLOY.md](./SUBDOMAIN-DEPLOY.md)** - Complete step-by-step guide
+
+### Option 3: Separate Cloud Hosting
+- **Backend:** Railway (Express.js + MySQL)
+- **Frontend:** Vercel or Netlify (React + Vite)
+
+### All Deployment Guides:
+
+**🌟 Hybrid Deployment (RECOMMENDED):**
+- **[HYBRID-DEPLOY.md](./HYBRID-DEPLOY.md)** 🚀 Frontend on Hostinger + Backend on Railway (25 min)
+
+**Full Hostinger Deployment:**
+- **[SUBDOMAIN-QUICK.md](./SUBDOMAIN-QUICK.md)** ⚡ 30-minute quick guide
+- **[SUBDOMAIN-DEPLOY.md](./SUBDOMAIN-DEPLOY.md)** 📖 Complete instructions with database setup
+
+**Backend Only (Railway):**
+- **[BACKEND-DEPLOY.md](./BACKEND-DEPLOY.md)** - Railway backend deployment
+- **[BACKEND-CHECKLIST.md](./BACKEND-CHECKLIST.md)** - Backend checklist
+- **[RAILWAY-DEPLOY.md](./RAILWAY-DEPLOY.md)** - Detailed Railway guide
+
+**Frontend Only:**
+- **[HOSTINGER-DEPLOY.md](./HOSTINGER-DEPLOY.md)** - Hostinger frontend deployment
+- **[HOSTINGER-QUICK.md](./HOSTINGER-QUICK.md)** - Quick Hostinger reference
+
+**Full Stack Guides:**
 - **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Complete deployment instructions
 - **[DEPLOYMENT-CHECKLIST.md](./DEPLOYMENT-CHECKLIST.md)** - Interactive checklist
-- **[RAILWAY-DEPLOY.md](./RAILWAY-DEPLOY.md)** - Railway backend deployment
-- **[HOSTINGER-DEPLOY.md](./HOSTINGER-DEPLOY.md)** - Hostinger frontend deployment
 - **[QUICKSTART.md](./QUICKSTART.md)** - Local development setup
 - **[README-DEPLOYMENT.md](./README-DEPLOYMENT.md)** - Deployment setup summary
 
@@ -237,7 +270,7 @@ This project is now ready for production deployment:
 
 **Backend:**
 - Express.js 4.18
-- PostgreSQL (Railway)
+- MySQL (Railway or Hostinger)
 - JWT + bcrypt authentication
 - TypeScript
 - Security: Helmet, CORS, Rate Limiting
@@ -321,5 +354,5 @@ MIT License - feel free to use this project for commercial or personal purposes.
 
 **Version**: 2.0.0  
 **Last Updated**: 2024  
-**Built with**: React + TypeScript + Vite + PostgreSQL
+**Built with**: React + TypeScript + Vite + MySQL
 ```

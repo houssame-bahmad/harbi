@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { body } from 'express-validator';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import pool from '../config/database';
+import { query } from '../config/database';
 
 const router = Router();
 
@@ -17,8 +17,9 @@ router.post('/register', [
     const { email, password, fullName, phoneNumber } = req.body;
 
     // Check if user exists
-    const userCheck = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    if (userCheck.rows.length > 0) {
+    const userCheck = await query('SELECT * FROM users WHERE email = ?', [email]);
+    const existingUsers = userCheck.rows as any[];
+    if (existingUsers.length > 0) {
       return res.status(400).json({ error: 'User already exists' });
     }
 
@@ -26,18 +27,23 @@ router.post('/register', [
     const passwordHash = await bcrypt.hash(password, 10);
 
     // Create user
-    const result = await pool.query(
-      'INSERT INTO users (email, password_hash, full_name, phone_number, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, full_name, phone_number, role, created_at',
-      [email, passwordHash, fullName, phoneNumber, 'user']
+    const result = await query(
+      'INSERT INTO users (email, password, name, phone, role) VALUES (?, ?, ?, ?, ?)',
+      [email, passwordHash, fullName, phoneNumber, 'USER']
     );
 
-    const user = result.rows[0];
+    const userId = (result.rows as any).insertId;
+
+    // Get the created user
+    const userResult = await query('SELECT id, email, name, phone, role, created_at FROM users WHERE id = ?', [userId]);
+    const userRows = userResult.rows as any[];
+    const user = userRows[0];
 
     // Generate token
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET!,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      process.env.JWT_SECRET || 'fallback-secret',
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as jwt.SignOptions
     );
 
     res.json({
@@ -45,8 +51,8 @@ router.post('/register', [
       user: {
         id: user.id,
         email: user.email,
-        fullName: user.full_name,
-        phoneNumber: user.phone_number,
+        fullName: user.name,
+        phoneNumber: user.phone,
         role: user.role,
         createdAt: user.created_at
       }
@@ -66,15 +72,16 @@ router.post('/login', [
     const { email, password } = req.body;
 
     // Find user
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    if (result.rows.length === 0) {
+    const result = await query('SELECT * FROM users WHERE email = ?', [email]);
+    const users = result.rows as any[];
+    if (users.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const user = result.rows[0];
+    const user = users[0];
 
     // Verify password
-    const isValid = await bcrypt.compare(password, user.password_hash);
+    const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -82,17 +89,18 @@ router.post('/login', [
     // Generate token
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET!,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      process.env.JWT_SECRET || 'fallback-secret',
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as jwt.SignOptions
     );
+
 
     res.json({
       token,
       user: {
         id: user.id,
         email: user.email,
-        fullName: user.full_name,
-        phoneNumber: user.phone_number,
+        fullName: user.name,
+        phoneNumber: user.phone,
         role: user.role,
         createdAt: user.created_at
       }

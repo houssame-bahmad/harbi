@@ -26,7 +26,7 @@ Replace `your-backend.up.railway.app` with your actual Railway backend URL.
 2. **Verify the API URL is correct:**
 ```powershell
 # Test if your backend is accessible
-curl https://your-backend.up.railway.app/health
+curl harbi-production.up.railway.app/health
 ```
 Should return: `{"status":"ok"}`
 

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import pool from '../config/database';
+import { query } from '../config/database';
 import { authMiddleware, adminOnly, deliveryOrAdmin } from '../middleware/auth';
 
 const router = Router();
@@ -7,18 +7,27 @@ const router = Router();
 // Get user's orders
 router.get('/my-orders', authMiddleware, async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT o.*, 
-             json_agg(json_build_object('productId', oi.product_id, 'productName', p.name, 'quantity', oi.quantity, 'price', oi.price)) as items
-      FROM orders o
-      LEFT JOIN order_items oi ON o.id = oi.order_id
-      LEFT JOIN products p ON oi.product_id = p.id
-      WHERE o.user_id = $1
-      GROUP BY o.id
-      ORDER BY o.order_date DESC
+    // Get orders
+    const ordersResult = await query(`
+      SELECT * FROM orders 
+      WHERE user_id = ?
+      ORDER BY created_at DESC
     `, [req.user?.userId]);
     
-    res.json(result.rows);
+    const orders = ordersResult.rows as any[];
+    
+    // Get order items for each order
+    for (const order of orders) {
+      const itemsResult = await query(`
+        SELECT oi.*, p.name as product_name 
+        FROM order_items oi
+        LEFT JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = ?
+      `, [order.id]);
+      order.items = itemsResult.rows;
+    }
+    
+    res.json(orders);
   } catch (error) {
     console.error('Get my orders error:', error);
     res.status(500).json({ error: 'Failed to fetch orders' });
@@ -28,23 +37,32 @@ router.get('/my-orders', authMiddleware, async (req, res) => {
 // Get all orders (admin)
 router.get('/all', authMiddleware, adminOnly, async (req, res) => {
   try {
-    const result = await pool.query(`
+    // Get all orders with user info
+    const ordersResult = await query(`
       SELECT o.*, 
-             u.full_name as customer_name, 
+             u.name as customer_name, 
              u.email as customer_email,
-             u.phone_number as customer_phone,
-             d.full_name as delivery_person_name,
-             json_agg(json_build_object('productId', oi.product_id, 'productName', p.name, 'quantity', oi.quantity, 'price', oi.price)) as items
+             d.name as delivery_person_name
       FROM orders o
       LEFT JOIN users u ON o.user_id = u.id
       LEFT JOIN users d ON o.delivery_person_id = d.id
-      LEFT JOIN order_items oi ON o.id = oi.order_id
-      LEFT JOIN products p ON oi.product_id = p.id
-      GROUP BY o.id, u.full_name, u.email, u.phone_number, d.full_name
-      ORDER BY o.order_date DESC
+      ORDER BY o.created_at DESC
     `);
     
-    res.json(result.rows);
+    const orders = ordersResult.rows as any[];
+    
+    // Get order items for each order
+    for (const order of orders) {
+      const itemsResult = await query(`
+        SELECT oi.*, p.name as product_name 
+        FROM order_items oi
+        LEFT JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = ?
+      `, [order.id]);
+      order.items = itemsResult.rows;
+    }
+    
+    res.json(orders);
   } catch (error) {
     console.error('Get all orders error:', error);
     res.status(500).json({ error: 'Failed to fetch orders' });
@@ -54,22 +72,31 @@ router.get('/all', authMiddleware, adminOnly, async (req, res) => {
 // Get delivery person's orders
 router.get('/delivery', authMiddleware, deliveryOrAdmin, async (req, res) => {
   try {
-    const result = await pool.query(`
+    // Get orders assigned to this delivery person
+    const ordersResult = await query(`
       SELECT o.*, 
-             u.full_name as customer_name, 
-             u.email as customer_email,
-             u.phone_number as customer_phone,
-             json_agg(json_build_object('productId', oi.product_id, 'productName', p.name, 'quantity', oi.quantity, 'price', oi.price)) as items
+             u.name as customer_name, 
+             u.email as customer_email
       FROM orders o
       LEFT JOIN users u ON o.user_id = u.id
-      LEFT JOIN order_items oi ON o.id = oi.order_id
-      LEFT JOIN products p ON oi.product_id = p.id
-      WHERE o.delivery_person_id = $1
-      GROUP BY o.id, u.full_name, u.email, u.phone_number
-      ORDER BY o.order_date DESC
+      WHERE o.delivery_person_id = ?
+      ORDER BY o.created_at DESC
     `, [req.user?.userId]);
     
-    res.json(result.rows);
+    const orders = ordersResult.rows as any[];
+    
+    // Get order items for each order
+    for (const order of orders) {
+      const itemsResult = await query(`
+        SELECT oi.*, p.name as product_name 
+        FROM order_items oi
+        LEFT JOIN products p ON oi.product_id = p.id
+        WHERE oi.order_id = ?
+      `, [order.id]);
+      order.items = itemsResult.rows;
+    }
+    
+    res.json(orders);
   } catch (error) {
     console.error('Get delivery orders error:', error);
     res.status(500).json({ error: 'Failed to fetch delivery orders' });
@@ -78,89 +105,84 @@ router.get('/delivery', authMiddleware, deliveryOrAdmin, async (req, res) => {
 
 // Create order
 router.post('/', authMiddleware, async (req, res) => {
-  const client = await pool.connect();
   try {
-    await client.query('BEGIN');
-    
-    const { items, deliveryAddress, paymentMethod, totalAmount } = req.body;
+    const { items, deliveryAddress, phone, paymentMethod, totalAmount } = req.body;
     
     // Create order
-    const orderResult = await client.query(
-      `INSERT INTO orders (user_id, total_amount, delivery_address, payment_method, status, payment_status) 
-       VALUES ($1, $2, $3, $4, 'Pending', 'Pending') 
-       RETURNING *`,
-      [req.user?.userId, totalAmount, deliveryAddress, paymentMethod]
+    const orderResult = await query(
+      `INSERT INTO orders (user_id, total, delivery_address, phone, status, payment_status) 
+       VALUES (?, ?, ?, ?, 'PENDING', 'PENDING')`,
+      [req.user?.userId, totalAmount, deliveryAddress, phone]
     );
     
-    const order = orderResult.rows[0];
+    const orderId = (orderResult.rows as any).insertId;
     
     // Create order items and update stock
     for (const item of items) {
-      await client.query(
+      await query(
         `INSERT INTO order_items (order_id, product_id, quantity, price) 
-         VALUES ($1, $2, $3, $4)`,
-        [order.id, item.productId, item.quantity, item.price]
+         VALUES (?, ?, ?, ?)`,
+        [orderId, item.productId, item.quantity, item.price]
       );
       
-      await client.query(
-        `UPDATE products SET stock_quantity = stock_quantity - $1 WHERE id = $2`,
+      await query(
+        `UPDATE products SET stock = stock - ? WHERE id = ?`,
         [item.quantity, item.productId]
       );
     }
     
-    await client.query('COMMIT');
-    res.status(201).json(order);
+    // Get the created order
+    const newOrder = await query('SELECT * FROM orders WHERE id = ?', [orderId]);
+    const orderRows = newOrder.rows as any[];
+    
+    res.status(201).json(orderRows[0]);
   } catch (error) {
-    await client.query('ROLLBACK');
     console.error('Create order error:', error);
     res.status(500).json({ error: 'Failed to create order' });
-  } finally {
-    client.release();
   }
 });
 
 // Update order status
 router.patch('/:id/status', authMiddleware, async (req, res) => {
-  const client = await pool.connect();
   try {
     const { id } = req.params;
     const { status } = req.body;
     
-    await client.query('BEGIN');
-    
     // Get current order status
-    const currentOrder = await client.query('SELECT status FROM orders WHERE id = $1', [id]);
-    const currentStatus = currentOrder.rows[0]?.status;
+    const currentOrder = await query('SELECT status FROM orders WHERE id = ?', [id]);
+    const currentOrderRows = currentOrder.rows as any[];
+    const currentStatus = currentOrderRows[0]?.status;
     
     // If cancelling order, return items to stock
-    if (status === 'Cancelled' && currentStatus !== 'Cancelled') {
-      const items = await client.query(
-        'SELECT product_id, quantity FROM order_items WHERE order_id = $1',
+    if (status === 'CANCELLED' && currentStatus !== 'CANCELLED') {
+      const items = await query(
+        'SELECT product_id, quantity FROM order_items WHERE order_id = ?',
         [id]
       );
       
-      for (const item of items.rows) {
-        await client.query(
-          'UPDATE products SET stock_quantity = stock_quantity + $1 WHERE id = $2',
+      const itemRows = items.rows as any[];
+      for (const item of itemRows) {
+        await query(
+          'UPDATE products SET stock = stock + ? WHERE id = ?',
           [item.quantity, item.product_id]
         );
       }
     }
     
     // Update order status
-    const result = await client.query(
-      'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *',
+    await query(
+      'UPDATE orders SET status = ? WHERE id = ?',
       [status, id]
     );
     
-    await client.query('COMMIT');
-    res.json(result.rows[0]);
+    // Get updated order
+    const result = await query('SELECT * FROM orders WHERE id = ?', [id]);
+    const resultRows = result.rows as any[];
+    
+    res.json(resultRows[0]);
   } catch (error) {
-    await client.query('ROLLBACK');
     console.error('Update order status error:', error);
     res.status(500).json({ error: 'Failed to update order status' });
-  } finally {
-    client.release();
   }
 });
 
@@ -170,12 +192,16 @@ router.patch('/:id/payment', authMiddleware, async (req, res) => {
     const { id } = req.params;
     const { paymentStatus } = req.body;
     
-    const result = await pool.query(
-      'UPDATE orders SET payment_status = $1 WHERE id = $2 RETURNING *',
+    await query(
+      'UPDATE orders SET payment_status = ? WHERE id = ?',
       [paymentStatus, id]
     );
     
-    res.json(result.rows[0]);
+    // Get updated order
+    const result = await query('SELECT * FROM orders WHERE id = ?', [id]);
+    const resultRows = result.rows as any[];
+    
+    res.json(resultRows[0]);
   } catch (error) {
     console.error('Update payment status error:', error);
     res.status(500).json({ error: 'Failed to update payment status' });
@@ -188,12 +214,16 @@ router.patch('/:id/assign', authMiddleware, adminOnly, async (req, res) => {
     const { id } = req.params;
     const { deliveryPersonId } = req.body;
     
-    const result = await pool.query(
-      `UPDATE orders SET delivery_person_id = $1, status = 'Out for Delivery' WHERE id = $2 RETURNING *`,
+    await query(
+      `UPDATE orders SET delivery_person_id = ?, status = 'OUT_FOR_DELIVERY' WHERE id = ?`,
       [deliveryPersonId, id]
     );
     
-    res.json(result.rows[0]);
+    // Get updated order
+    const result = await query('SELECT * FROM orders WHERE id = ?', [id]);
+    const resultRows = result.rows as any[];
+    
+    res.json(resultRows[0]);
   } catch (error) {
     console.error('Assign delivery error:', error);
     res.status(500).json({ error: 'Failed to assign delivery person' });
