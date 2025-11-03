@@ -8,4 +8,4 @@
   publish = "dist"
 
 [build.environment]
-  VITE_API_URL = "https://harbi-production.up.railway.app/api"
+  VITE_API_URL = "https://houssame-production.up.railway.app/api"
