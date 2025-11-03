@@ -1,0 +1,168 @@
+import { User, Product, Category, Order, OrderStatus, PaymentStatus, UserRole } from '../types';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+// Get auth token from localStorage
+const getAuthToken = (): string | null => {
+  return localStorage.getItem('authToken');
+};
+
+// Set auth token
+const setAuthToken = (token: string): void => {
+  localStorage.setItem('authToken', token);
+};
+
+// Remove auth token
+const removeAuthToken = (): void => {
+  localStorage.removeItem('authToken');
+};
+
+// API request helper
+async function apiRequest(endpoint: string, options: RequestInit = {}) {
+  const token = getAuthToken();
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...(token && { Authorization: `Bearer ${token}` }),
+    ...options.headers,
+  };
+
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Request failed' }));
+    throw new Error(error.error || `HTTP ${response.status}`);
+  }
+
+  return response.json();
+}
+
+// Delay helper
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+export const api = {
+  // Auth
+  login: async (email: string, password: string): Promise<{ token: string; user: User }> => {
+    const data = await apiRequest('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+    setAuthToken(data.token);
+    return data;
+  },
+
+  register: async (email: string, password: string, fullName: string, phoneNumber: string): Promise<{ token: string; user: User }> => {
+    const data = await apiRequest('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ email, password, fullName, phoneNumber }),
+    });
+    setAuthToken(data.token);
+    return data;
+  },
+
+  logout: async (): Promise<void> => {
+    removeAuthToken();
+  },
+
+  // Products
+  getProducts: async (): Promise<Product[]> => {
+    return apiRequest('/products');
+  },
+
+  getProductById: async (id: number): Promise<Product> => {
+    return apiRequest(`/products/${id}`);
+  },
+
+  createProduct: async (product: Omit<Product, 'id'>): Promise<Product> => {
+    return apiRequest('/products', {
+      method: 'POST',
+      body: JSON.stringify(product),
+    });
+  },
+
+  updateProduct: async (id: number, product: Partial<Product>): Promise<Product> => {
+    return apiRequest(`/products/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(product),
+    });
+  },
+
+  deleteProduct: async (id: number): Promise<void> => {
+    return apiRequest(`/products/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Orders
+  createOrder: async (orderData: { items: any[]; deliveryAddress: string; paymentMethod: string; totalAmount: number }): Promise<Order> => {
+    return apiRequest('/orders', {
+      method: 'POST',
+      body: JSON.stringify(orderData),
+    });
+  },
+
+  getOrdersByUserId: async (userId: number): Promise<Order[]> => {
+    return apiRequest('/orders/my-orders');
+  },
+
+  getAllOrders: async (): Promise<Order[]> => {
+    return apiRequest('/orders/all');
+  },
+
+  getDeliveryOrders: async (): Promise<Order[]> => {
+    return apiRequest('/orders/delivery');
+  },
+
+  updateOrderStatus: async (orderId: number, status: OrderStatus): Promise<Order> => {
+    return apiRequest(`/orders/${orderId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+  },
+
+  updatePaymentStatus: async (orderId: number, paymentStatus: PaymentStatus): Promise<Order> => {
+    return apiRequest(`/orders/${orderId}/payment`, {
+      method: 'PATCH',
+      body: JSON.stringify({ paymentStatus }),
+    });
+  },
+
+  assignDeliveryPerson: async (orderId: number, deliveryPersonId: number): Promise<Order> => {
+    return apiRequest(`/orders/${orderId}/assign`, {
+      method: 'PATCH',
+      body: JSON.stringify({ deliveryPersonId }),
+    });
+  },
+
+  // Users
+  getAllUsers: async (): Promise<User[]> => {
+    return apiRequest('/users');
+  },
+
+  getDeliveryPersons: async (): Promise<User[]> => {
+    return apiRequest('/users/delivery-persons');
+  },
+
+  updateUserRole: async (userId: number, role: UserRole): Promise<User> => {
+    return apiRequest(`/users/${userId}/role`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role }),
+    });
+  },
+
+  // Categories (if needed)
+  getCategories: async (): Promise<Category[]> => {
+    // For now, return hardcoded categories since they're static
+    await delay(300);
+    return [
+      { id: 1, name: 'Skincare' },
+      { id: 2, name: 'Vitamins' },
+      { id: 3, name: 'First Aid' },
+      { id: 4, name: 'Personal Care' },
+    ];
+  },
+};
+
+export default api;

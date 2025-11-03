@@ -1,0 +1,575 @@
+/* Modern Parapharmacie Layout - Professional Healthcare Design */
+:root{
+  /* Medical/Pharmacy Color Palette */
+  --brand-primary: #00A896;        /* Teal - Trust, health, cleanliness */
+  --brand-primary-dark: #028577;   /* Darker teal for hover states */
+  --brand-secondary: #FF6B6B;      /* Coral - Energy, wellness */
+  --brand-accent: #4ECDC4;         /* Light teal - Fresh, modern */
+  --health-green: #05A05A;         /* Medical green */
+  --text-dark: #2D3748;            /* Dark gray for text */
+  --text-muted: #718096;           /* Muted gray */
+  --bg-light: #F7FAFC;             /* Light background */
+  --bg-white: #FFFFFF;
+  --border-color: #E2E8F0;
+  --card-shadow: 0 4px 12px rgba(0, 168, 150, 0.08);
+  --card-hover-shadow: 0 8px 24px rgba(0, 168, 150, 0.15);
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Typography - Professional & Clean */
+html, body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--text-dark);
+  background-color: var(--bg-light);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', 'Inter', sans-serif;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+/* Container */
+.container {
+  max-width: 1280px;
+}
+
+/* Hero Section - Medical Professional */
+.hero {
+  background: linear-gradient(135deg, rgba(0, 168, 150, 0.05) 0%, rgba(78, 205, 196, 0.08) 100%);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 48px 32px;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(0, 168, 150, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 16px;
+}
+
+/* Product Cards - Modern Healthcare */
+.product-card {
+  background: var(--bg-white);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  position: relative;
+}
+
+.product-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--brand-primary) 0%, var(--brand-accent) 100%);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--card-hover-shadow);
+  border-color: var(--brand-accent);
+}
+
+.product-card:hover::after {
+  transform: scaleX(1);
+}
+
+.product-card img {
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover img {
+  transform: scale(1.05);
+}
+
+/* Category Pills - Pharmaceutical Style */
+.category-pill {
+  background: var(--bg-white);
+  border: 2px solid var(--border-color);
+  border-radius: 24px;
+  padding: 8px 20px;
+  font-weight: 500;
+  color: var(--text-dark);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.category-pill:hover,
+.category-pill.active {
+  background: var(--brand-primary);
+  border-color: var(--brand-primary);
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Buttons - Medical Professional */
+button, .btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 168, 150, 0.2);
+}
+
+/* Navbar - Clean Medical */
+nav {
+  background: var(--bg-white);
+  border-bottom: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
+}
+
+.nav-search input {
+  min-width: 280px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.nav-search input:focus {
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(0, 168, 150, 0.1);
+}
+
+/* Cards & Modals */
+.card {
+  background: var(--bg-white);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--border-color);
+}
+
+/* Status Badges - Healthcare Colors */
+.badge-pending {
+  background-color: #FEF3C7;
+  color: #92400E;
+}
+
+.badge-confirmed {
+  background-color: #DBEAFE;
+  color: #1E40AF;
+}
+
+.badge-delivered {
+  background-color: #D1FAE5;
+  color: #065F46;
+}
+
+.badge-cancelled {
+  background-color: #FEE2E2;
+  color: #991B1B;
+}
+
+/* Tables - Professional */
+table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+table thead {
+  background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-white) 100%);
+}
+
+table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+table tbody tr:hover {
+  background-color: rgba(0, 168, 150, 0.02);
+}
+
+/* Footer - Medical Professional */
+footer {
+  background: linear-gradient(135deg, var(--text-dark) 0%, #1a202c 100%);
+  border-top: 3px solid var(--brand-primary);
+}
+
+.footer-links a {
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: var(--brand-accent);
+}
+
+/* Loading States */
+@keyframes pulse-medical {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.loading {
+  animation: pulse-medical 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Responsive - Mobile First */
+@media (max-width: 640px) {
+  .hero {
+    padding: 32px 20px;
+  }
+  
+  .hero h1 {
+    font-size: 1.875rem;
+  }
+  
+  .nav-search input {
+    min-width: 160px;
+  }
+  
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Accessibility */
+:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom Scrollbar - Branded */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-light);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--brand-accent);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-primary);
+}
+
+/* Modern Form Styles */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+textarea,
+select {
+  transition: var(--transition-smooth);
+  border-radius: 8px;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--brand-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 168, 150, 0.1);
+}
+
+/* Badge Styles */
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-primary {
+  background: var(--brand-primary);
+  color: white;
+}
+
+.badge-success {
+  background: var(--health-green);
+  color: white;
+}
+
+.badge-warning {
+  background: #F59E0B;
+  color: white;
+}
+
+.badge-danger {
+  background: var(--brand-secondary);
+  color: white;
+}
+
+/* Card Enhancements */
+.card-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(135deg, rgba(0, 168, 150, 0.02) 0%, rgba(78, 205, 196, 0.05) 100%);
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.card-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-light);
+}
+
+/* Stats Cards */
+.stat-card {
+  background: var(--bg-white);
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid var(--border-color);
+  transition: var(--transition-smooth);
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--card-hover-shadow);
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--brand-primary);
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Alert Boxes */
+.alert {
+  padding: 16px 20px;
+  border-radius: 8px;
+  border-left: 4px solid;
+  margin-bottom: 16px;
+}
+
+.alert-info {
+  background: rgba(0, 168, 150, 0.1);
+  border-color: var(--brand-primary);
+  color: var(--brand-primary-dark);
+}
+
+.alert-success {
+  background: rgba(5, 160, 90, 0.1);
+  border-color: var(--health-green);
+  color: #047857;
+}
+
+.alert-warning {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: #F59E0B;
+  color: #B45309;
+}
+
+.alert-danger {
+  background: rgba(255, 107, 107, 0.1);
+  border-color: var(--brand-secondary);
+  color: #DC2626;
+}
+
+/* Loading States */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Empty States */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state svg {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 20px;
+  opacity: 0.3;
+}
+
+/* Dividers */
+.divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 24px 0;
+}
+
+.divider-vertical {
+  width: 1px;
+  background: var(--border-color);
+  height: 100%;
+}
+
+/* Tooltips */
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text-dark);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 1000;
+  margin-bottom: 8px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+.scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+/* Utility Classes */
+.shadow-soft {
+  box-shadow: var(--card-shadow);
+}
+
+.shadow-strong {
+  box-shadow: var(--card-hover-shadow);
+}
+
+.gradient-primary {
+  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-accent) 100%);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white;
+  }
+  
+  .product-card,
+  .stat-card {
+    break-inside: avoid;
+  }
+}

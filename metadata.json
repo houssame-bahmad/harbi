@@ -1,0 +1,5 @@
+{
+  "name": "Parapharmacie Store",
+  "description": "A web application for a parapharmacie store with role-based access for users, hosts, and administrators, featuring product management, order tracking, and a 'Payment on Delivery' model.",
+  "requestFramePermissions": []
+}
