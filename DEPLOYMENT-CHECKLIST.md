@@ -72,7 +72,70 @@ psql [DATABASE_URL] < db/seed.postgres.sql
 
 ---
 
-## 🌐 Frontend Deployment (Vercel)
+## 🌐 Frontend Deployment
+
+### Choose Your Hosting Platform:
+
+**Option A: Hostinger (Recommended for you)** ⭐
+- See detailed guide: **[HOSTINGER-DEPLOY.md](./HOSTINGER-DEPLOY.md)**
+- Shared hosting with FTP upload
+- Perfect if you already have Hostinger account
+
+**Option B: Vercel** (Auto-deployment)
+- See steps below
+- Free tier available
+- Auto-deploy from GitHub
+
+**Option C: Netlify** (Alternative)
+- See "Alternative: Frontend Deployment (Netlify)" section
+- Similar to Vercel
+
+---
+
+## 🌐 Frontend Deployment - Hostinger (Your Choice)
+
+### 1. Configure Environment
+- [ ] Update `.env` file:
+```env
+VITE_API_URL=https://your-backend.railway.app/api
+```
+- [ ] Replace with your actual Railway backend URL
+
+### 2. Build Production Files
+```powershell
+npm install
+npm run build
+```
+- [ ] Verify `dist/` folder created
+- [ ] Contains: `index.html`, `assets/` folder
+
+### 3. Upload to Hostinger
+- [ ] Login to Hostinger hPanel
+- [ ] Go to File Manager → `public_html`
+- [ ] Delete default files
+- [ ] Upload ALL files from `dist/` folder
+- [ ] Upload includes: `index.html` and `assets/` folder
+
+### 4. Create .htaccess File
+- [ ] In `public_html`, create `.htaccess` file
+- [ ] Add React Router rewrite rules (see HOSTINGER-DEPLOY.md)
+
+### 5. Update Backend CORS
+- [ ] Go to Railway → Backend service → Variables
+- [ ] Update `FRONTEND_URL` to your Hostinger domain
+- [ ] Example: `https://yourdomain.com`
+
+### 6. Test Deployment
+- [ ] Visit your domain: `https://yourdomain.com`
+- [ ] Check products load
+- [ ] Test login/register
+- [ ] Verify no CORS errors (F12 → Console)
+
+**📖 Full Hostinger Guide:** [HOSTINGER-DEPLOY.md](./HOSTINGER-DEPLOY.md)
+
+---
+
+## 🌐 Frontend Deployment - Vercel (Alternative)
 
 ### 1. Create Vercel Account
 - [ ] Sign up at https://vercel.com

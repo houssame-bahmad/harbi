@@ -228,6 +228,8 @@ This project is now ready for production deployment:
 ### Deployment Guides:
 - **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Complete deployment instructions
 - **[DEPLOYMENT-CHECKLIST.md](./DEPLOYMENT-CHECKLIST.md)** - Interactive checklist
+- **[RAILWAY-DEPLOY.md](./RAILWAY-DEPLOY.md)** - Railway backend deployment
+- **[HOSTINGER-DEPLOY.md](./HOSTINGER-DEPLOY.md)** - Hostinger frontend deployment
 - **[QUICKSTART.md](./QUICKSTART.md)** - Local development setup
 - **[README-DEPLOYMENT.md](./README-DEPLOYMENT.md)** - Deployment setup summary
 
@@ -243,10 +245,10 @@ This project is now ready for production deployment:
 **Frontend:**
 - React 19.2.0 + TypeScript
 - Vite 6.2.0
-- Vercel/Netlify hosting
+- Hostinger / Vercel / Netlify hosting options
 - Environment-based API configuration
 
-**Cost:** $0-5/month (Railway free tier + Vercel free tier)
+**Cost:** $0-5/month (Railway $5/month + Hostinger existing account)
 
 ### Development vs Production:
 

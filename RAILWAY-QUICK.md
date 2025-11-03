@@ -53,22 +53,31 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 
 ### 8. Run Database Migrations
 
-**Option A: Railway CLI**
+**Easiest Method: Railway Dashboard**
+1. Click **PostgreSQL** service → **Connect** tab
+2. Copy the **Postgres Connection URL**
+3. Run migrations locally:
+```powershell
+# Set DATABASE_URL (replace with your actual URL from Railway)
+$env:DATABASE_URL="your-postgres-url-here"
+
+# Run migrations
+psql $env:DATABASE_URL -f db/schema.postgres.sql
+psql $env:DATABASE_URL -f db/seed.postgres.sql
+```
+
+**Alternative: Railway Web Console**
+1. PostgreSQL service → **Data** tab → **Query**
+2. Copy/paste contents from `db/schema.postgres.sql`, Execute
+3. Copy/paste contents from `db/seed.postgres.sql`, Execute
+
+**Using Railway CLI** (if needed)
 ```powershell
 npm install -g @railway/cli
 railway login
-railway link
-railway run psql $DATABASE_URL < db/schema.postgres.sql
-railway run psql $DATABASE_URL < db/seed.postgres.sql
-```
-
-**Option B: Manual (PostgreSQL Dashboard)**
-- Click PostgreSQL service → Data tab
-- Copy DATABASE_URL
-- Run locally:
-```powershell
-psql "[YOUR_DATABASE_URL]" < db/schema.postgres.sql
-psql "[YOUR_DATABASE_URL]" < db/seed.postgres.sql
+railway link  # Select your project from the list
+railway run psql $DATABASE_URL -f db/schema.postgres.sql
+railway run psql $DATABASE_URL -f db/seed.postgres.sql
 ```
 
 ### 9. Test Your API

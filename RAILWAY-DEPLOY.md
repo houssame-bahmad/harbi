@@ -104,7 +104,23 @@ Copy the output and paste it as `JWT_SECRET` value.
 
 ### Step 7: Run Database Migrations
 
-**Option A: Using Railway CLI** (Recommended)
+**Option A: Using Railway Dashboard** (Easiest - Recommended)
+1. Click on **PostgreSQL** service in Railway
+2. Go to **"Connect"** tab
+3. Copy the **"Postgres Connection URL"** (DATABASE_URL)
+4. Run migrations locally using psql:
+```powershell
+# Set the DATABASE_URL as environment variable (replace with your actual URL)
+$env:DATABASE_URL="postgresql://postgres:password@region.railway.app:5432/railway"
+
+# Run schema migration
+psql $env:DATABASE_URL -f db/schema.postgres.sql
+
+# Run seed data
+psql $env:DATABASE_URL -f db/seed.postgres.sql
+```
+
+**Option B: Using Railway CLI**
 ```powershell
 # Install Railway CLI
 npm install -g @railway/cli
@@ -112,30 +128,26 @@ npm install -g @railway/cli
 # Login
 railway login
 
-# Link to your project
+# Link to your project (use web interface to get project ID)
+# In Railway dashboard, go to Project Settings to find your project ID
+railway link [PROJECT_ID]
+
+# Or link interactively
 railway link
 
 # Run migrations
-railway run psql $DATABASE_URL < db/schema.postgres.sql
-railway run psql $DATABASE_URL < db/seed.postgres.sql
+railway run psql $DATABASE_URL -f db/schema.postgres.sql
+railway run psql $DATABASE_URL -f db/seed.postgres.sql
 ```
 
-**Option B: Using Railway Dashboard**
-1. Go to PostgreSQL service → **Data** tab
-2. Copy the `DATABASE_URL`
-3. Run locally:
-```powershell
-# Replace [URL] with your DATABASE_URL
-psql "[DATABASE_URL]" < db/schema.postgres.sql
-psql "[DATABASE_URL]" < db/seed.postgres.sql
-```
+**Option C: Manual via Railway Web Console**
+1. Click on **PostgreSQL** service
+2. Go to **"Data"** tab
+3. Click **"Query"** button
+4. Copy contents from `db/schema.postgres.sql` and paste, then Execute
+5. Copy contents from `db/seed.postgres.sql` and paste, then Execute
 
-**Option C: Manual via Railway Shell**
-1. Click on PostgreSQL service
-2. Click **"Connect"**
-3. Click **"psql"** to open shell
-4. Copy/paste the SQL from `db/schema.postgres.sql`
-5. Then copy/paste from `db/seed.postgres.sql`
+**Note:** If you don't have `psql` installed locally, use Option C (Railway Web Console)
 
 ### Step 8: Verify Deployment
 
@@ -185,6 +197,31 @@ psql "[DATABASE_URL]" < db/seed.postgres.sql
 ---
 
 ## 🔧 Troubleshooting
+
+### "You must specify a workspaceId to create a project"
+This error occurs when using Railway CLI. **Solutions:**
+
+**Solution 1: Use Railway Dashboard (Recommended)**
+- Don't use CLI for initial setup
+- Use the web interface at https://railway.app
+- Deploy directly from GitHub (easier and more reliable)
+
+**Solution 2: Link to Existing Project**
+```powershell
+# Login first
+railway login
+
+# Link to existing project (interactive - select from list)
+railway link
+
+# Or specify project ID (found in Railway dashboard URL)
+railway link [your-project-id]
+```
+
+**Solution 3: Create Workspace First**
+1. Go to Railway dashboard
+2. Create a new workspace if you don't have one
+3. Then use `railway link` to connect to projects in that workspace
 
 ### Build Fails
 - Check Railway build logs
