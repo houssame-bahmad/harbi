@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate, Outlet, useLocation } from 'react-router-dom';
-import { mockApi } from './services/mockApi';
+import { api } from './services/api';
 import { User, Product, CartItem, UserRole, Order, OrderStatus, Category, PaymentStatus } from './types';
 import { Button, Card, Icons, Input, Modal } from './components/ui';
 
@@ -46,7 +46,7 @@ const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
-    const loggedInUser = await mockApi.login(email, password);
+    const loggedInUser = await api.login(email, password);
     if (loggedInUser) {
       setUser(loggedInUser);
       localStorage.setItem('user', JSON.stringify(loggedInUser));
@@ -60,7 +60,7 @@ const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const register = async (userData: { email: string; fullName: string; phoneNumber: string; password: string }) => {
     setIsLoading(true);
     try {
-      const newUser = await mockApi.register(userData);
+      const newUser = await api.register(userData);
       setUser(newUser);
       localStorage.setItem('user', JSON.stringify(newUser));
       setIsLoading(false);
@@ -398,7 +398,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
   useEffect(() => {
     let mounted = true;
     if (isModalOpen) {
-      mockApi.getCategories().then(cats => {
+      api.getCategories().then(cats => {
         if (!mounted) return;
         const cat = cats.find(c => c.id === product.categoryId);
         setCategoryName(cat ? cat.name : null);
@@ -580,7 +580,7 @@ const HomePage: React.FC = () => {
 
   useEffect(() => {
     let mounted = true;
-    Promise.all([mockApi.getProducts(), mockApi.getCategories()]).then(([prods, cats]) => {
+    Promise.all([api.getAllProducts(), api.getCategories()]).then(([prods, cats]) => {
       if (!mounted) return;
       setProducts(prods);
       setCategories(cats);
@@ -714,7 +714,7 @@ const ProductDetailPage: React.FC = () => {
   
   useEffect(() => {
     if (id) {
-      mockApi.getProductById(parseInt(id)).then(data => {
+      api.getProductById(parseInt(id)).then(data => {
         setProduct(data || null);
         setLoading(false);
       });
@@ -947,7 +947,7 @@ const CheckoutPage: React.FC = () => {
         };
     try {
       // @ts-ignore
-      await mockApi.placeOrder(orderData);
+      await api.placeOrder(orderData);
     } catch (err: any) {
       setIsPlacingOrder(false);
       setError(err?.message || 'Failed to place order.');
@@ -1003,7 +1003,7 @@ const OrderHistoryPage: React.FC = () => {
 
     useEffect(() => {
         if (user) {
-            mockApi.getOrdersByUserId(user.id).then(data => {
+            api.getOrdersByUserId(user.id).then(data => {
                 setOrders(data);
                 setLoading(false);
             });
@@ -1077,12 +1077,12 @@ const DeliveryDashboard: React.FC = () => {
 
     const loadOrders = async () => {
         if (user) {
-            const deliveryOrders = await mockApi.getDeliveryOrders(user.id);
+            const deliveryOrders = await api.getDeliveryOrders(user.id);
             setOrders(deliveryOrders);
             
             // Load user details for each order
             const userIds = [...new Set(deliveryOrders.map(o => o.userId))];
-            const usersData = await Promise.all(userIds.map(id => mockApi.getUserById(id)));
+            const usersData = await Promise.all(userIds.map(id => api.getUserById(id)));
             setUsers(usersData.filter(Boolean) as User[]);
             
             setLoading(false);
@@ -1094,12 +1094,12 @@ const DeliveryDashboard: React.FC = () => {
     }, [user]);
 
     const handleMarkDelivered = async (orderId: number) => {
-        await mockApi.updateOrderStatus(orderId, OrderStatus.DELIVERED);
+        await api.updateOrderStatus(orderId, OrderStatus.DELIVERED);
         loadOrders();
     };
 
     const handleUpdatePayment = async (orderId: number, status: PaymentStatus) => {
-        await mockApi.updatePaymentStatus(orderId, status);
+        await api.updatePaymentStatus(orderId, status);
         loadOrders();
     };
 
@@ -1242,7 +1242,7 @@ const ProductForm: React.FC<{ product?: Product; onSave: (product: Product) => v
     const [uploadMethod, setUploadMethod] = useState<'url' | 'file'>('url');
 
     useEffect(() => {
-        mockApi.getCategories().then(setCategories);
+        api.getCategories().then(setCategories);
     }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -1292,10 +1292,10 @@ const ProductForm: React.FC<{ product?: Product; onSave: (product: Product) => v
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (product) { // Editing
-            await mockApi.updateProduct({ ...product, ...formData });
+            await api.updateProduct({ ...product, ...formData });
             onSave({ ...product, ...formData });
         } else { // Creating
-            const newProduct = await mockApi.createProduct(formData);
+            const newProduct = await api.createProduct(formData);
             onSave(newProduct);
         }
     };
@@ -1407,7 +1407,7 @@ const ProductManagementPage: React.FC = () => {
 
     const loadProducts = useCallback(async () => {
         setLoading(true);
-        const allProducts = await mockApi.getAllProducts();
+        const allProducts = await api.getAllProducts();
         if (user) {
             const userProducts = user.role === UserRole.ADMIN ? allProducts : allProducts.filter(p => p.hostId === user.id);
             setProducts(userProducts);
@@ -1580,7 +1580,7 @@ const AdminUserManagement: React.FC = () => {
     const [loading, setLoading] = useState(true);
 
     const loadUsers = useCallback(() => {
-        mockApi.getAllUsers().then(data => {
+        api.getAllUsers().then(data => {
             setUsers(data);
             setLoading(false);
         });
@@ -1589,7 +1589,7 @@ const AdminUserManagement: React.FC = () => {
     useEffect(loadUsers, [loadUsers]);
     
     const handleRoleChange = async (userId: number, newRole: UserRole) => {
-        await mockApi.updateUserRole(userId, newRole);
+        await api.updateUserRole(userId, newRole);
         loadUsers();
     };
 
@@ -1751,7 +1751,7 @@ const AdminOrderManagement: React.FC = () => {
     
   const loadData = useCallback(() => {
     setLoading(true);
-    Promise.all([mockApi.getAllOrders(), mockApi.getAllUsers()]).then(([ordersData, usersData]) => {
+    Promise.all([api.getAllOrders(), api.getAllUsers()]).then(([ordersData, usersData]) => {
       setOrders(ordersData);
       setUsers(usersData);
       setDeliveryPersons(usersData.filter(u => u.role === UserRole.DELIVERY));
@@ -1770,17 +1770,17 @@ const AdminOrderManagement: React.FC = () => {
   }, [loadData]);
 
   const handleStatusChange = async (orderId: number, status: OrderStatus) => {
-    await mockApi.updateOrderStatus(orderId, status);
+    await api.updateOrderStatus(orderId, status);
     loadData();
   };
 
   const handleAssignDelivery = async (orderId: number, deliveryPersonId: number) => {
-    await mockApi.assignDeliveryPerson(orderId, deliveryPersonId);
+    await api.assignDeliveryPerson(orderId, deliveryPersonId);
     loadData();
   };
 
   const handlePaymentStatusChange = async (orderId: number, paymentStatus: PaymentStatus) => {
-    await mockApi.updatePaymentStatus(orderId, paymentStatus);
+    await api.updatePaymentStatus(orderId, paymentStatus);
     loadData();
   };
     
@@ -1989,7 +1989,7 @@ const AdminOrderManagement: React.FC = () => {
                           variant="ghost" 
                           onClick={async () => { 
                             setSelectedUser(user); 
-                            const userOrders = await mockApi.getOrdersByUserId(user.id);
+                            const userOrders = await api.getOrdersByUserId(user.id);
                             setSelectedUserOrders(userOrders);
                             setIsUserModalOpen(true); 
                           }}

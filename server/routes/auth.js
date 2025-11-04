@@ -1,0 +1,169 @@
+const express = require('express');
+const router = express.Router();
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { body, validationResult } = require('express-validator');
+const db = require('../config/database');
+const { authMiddleware } = require('../middleware/auth');
+
+// Health check for /api/auth
+router.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'Auth API is running' });
+});
+
+// Login
+router.post('/login', 
+  [
+    body('email').isEmail().normalizeEmail(),
+    body('password').notEmpty()
+  ],
+  async (req, res) => {
+    try {
+      // Validate request
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          error: { message: 'Invalid input', errors: errors.array() }
+        });
+      }
+
+      const { email, password } = req.body;
+
+      // Find user
+      const [users] = await db.query(
+        'SELECT * FROM users WHERE email = ?',
+        [email]
+      );
+
+      if (users.length === 0) {
+        return res.status(401).json({
+          error: { message: 'Invalid email or password' }
+        });
+      }
+
+      const user = users[0];
+
+      // Check password
+      const isValidPassword = await bcrypt.compare(password, user.password);
+
+      if (!isValidPassword) {
+        return res.status(401).json({
+          error: { message: 'Invalid email or password' }
+        });
+      }
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { 
+          id: user.id, 
+          email: user.email, 
+          role: user.role 
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRATION || '7d' }
+      );
+
+      res.json({
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role
+        },
+        token
+      });
+
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({
+        error: { message: 'Login failed', status: 500 }
+      });
+    }
+  }
+);
+
+// Get current user
+router.get('/me', authMiddleware, async (req, res) => {
+  try {
+    const [users] = await db.query(
+      'SELECT id, email, role, created_at FROM users WHERE id = ?',
+      [req.user.id]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({
+        error: { message: 'User not found' }
+      });
+    }
+
+    res.json({ user: users[0] });
+
+  } catch (error) {
+    console.error('Get user error:', error);
+    res.status(500).json({
+      error: { message: 'Failed to get user', status: 500 }
+    });
+  }
+});
+
+// Change password
+router.post('/change-password',
+  authMiddleware,
+  [
+    body('currentPassword').notEmpty(),
+    body('newPassword').isLength({ min: 8 })
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          error: { message: 'Invalid input', errors: errors.array() }
+        });
+      }
+
+      const { currentPassword, newPassword } = req.body;
+
+      // Get user
+      const [users] = await db.query(
+        'SELECT * FROM users WHERE id = ?',
+        [req.user.id]
+      );
+
+      if (users.length === 0) {
+        return res.status(404).json({
+          error: { message: 'User not found' }
+        });
+      }
+
+      const user = users[0];
+
+      // Verify current password
+      const isValid = await bcrypt.compare(currentPassword, user.password);
+
+      if (!isValid) {
+        return res.status(401).json({
+          error: { message: 'Current password is incorrect' }
+        });
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update password
+      await db.query(
+        'UPDATE users SET password = ? WHERE id = ?',
+        [hashedPassword, req.user.id]
+      );
+
+      res.json({ message: 'Password updated successfully' });
+
+    } catch (error) {
+      console.error('Change password error:', error);
+      res.status(500).json({
+        error: { message: 'Failed to change password', status: 500 }
+      });
+    }
+  }
+);
+
+module.exports = router;

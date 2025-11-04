@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Test - Harbi API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .endpoint {
+            font-family: monospace;
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 CORS Test for Harbi API</h1>
+        
+        <p>Testing CORS from: <span class="endpoint" id="currentOrigin"></span></p>
+        <p>Backend API: <span class="endpoint">https://harbi-production.up.railway.app/api</span></p>
+        
+        <hr>
+        
+        <h3>Test Endpoints:</h3>
+        
+        <button onclick="testHealth()">Test /health</button>
+        <button onclick="testProducts()">Test GET /api/products</button>
+        <button onclick="testAuth()">Test POST /api/auth/login</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // Display current origin
+        document.getElementById('currentOrigin').textContent = window.location.origin;
+
+        function showResult(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result ${type}`;
+            resultDiv.innerHTML = message;
+        }
+
+        async function testHealth() {
+            showResult('Testing /health endpoint...', 'info');
+            
+            try {
+                const response = await fetch('https://harbi-production.up.railway.app/health', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult(
+                        `✅ SUCCESS!\n\n` +
+                        `Status: ${response.status} ${response.statusText}\n` +
+                        `Response:\n${JSON.stringify(data, null, 2)}\n\n` +
+                        `CORS Headers:\n` +
+                        `Access-Control-Allow-Origin: ${response.headers.get('Access-Control-Allow-Origin')}\n` +
+                        `Access-Control-Allow-Credentials: ${response.headers.get('Access-Control-Allow-Credentials')}`,
+                        'success'
+                    );
+                } else {
+                    showResult(
+                        `❌ HTTP Error\n\n` +
+                        `Status: ${response.status} ${response.statusText}\n` +
+                        `Response: ${await response.text()}`,
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult(
+                    `❌ CORS or Network Error\n\n` +
+                    `Error: ${error.message}\n\n` +
+                    `This usually means:\n` +
+                    `1. CORS headers are not properly configured\n` +
+                    `2. Backend server is not responding\n` +
+                    `3. Network connectivity issue`,
+                    'error'
+                );
+            }
+        }
+
+        async function testProducts() {
+            showResult('Testing GET /api/products...', 'info');
+            
+            try {
+                const response = await fetch('https://harbi-production.up.railway.app/api/products', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult(
+                        `✅ SUCCESS!\n\n` +
+                        `Status: ${response.status} ${response.statusText}\n` +
+                        `Products count: ${Array.isArray(data) ? data.length : 'N/A'}\n` +
+                        `First product: ${data[0] ? data[0].name : 'None'}\n\n` +
+                        `CORS Headers:\n` +
+                        `Access-Control-Allow-Origin: ${response.headers.get('Access-Control-Allow-Origin')}\n` +
+                        `Access-Control-Allow-Credentials: ${response.headers.get('Access-Control-Allow-Credentials')}`,
+                        'success'
+                    );
+                } else {
+                    showResult(
+                        `❌ HTTP Error\n\n` +
+                        `Status: ${response.status} ${response.statusText}\n` +
+                        `Response: ${await response.text()}`,
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult(
+                    `❌ CORS or Network Error\n\n` +
+                    `Error: ${error.message}\n\n` +
+                    `This usually means:\n` +
+                    `1. CORS headers are not properly configured\n` +
+                    `2. Backend server is not responding\n` +
+                    `3. Network connectivity issue`,
+                    'error'
+                );
+            }
+        }
+
+        async function testAuth() {
+            showResult('Testing POST /api/auth/login (with dummy credentials)...', 'info');
+            
+            try {
+                const response = await fetch('https://harbi-production.up.railway.app/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'test@example.com',
+                        password: 'test123'
+                    })
+                });
+
+                // For auth test, we expect either 200 (success) or 401 (unauthorized)
+                // Both responses indicate CORS is working
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult(
+                        `✅ SUCCESS (Unexpected!)\n\n` +
+                        `Status: ${response.status} ${response.statusText}\n` +
+                        `Note: Login succeeded with dummy credentials (check your data!)\n\n` +
+                        `CORS Headers:\n` +
+                        `Access-Control-Allow-Origin: ${response.headers.get('Access-Control-Allow-Origin')}`,
+                        'success'
+                    );
+                } else if (response.status === 401 || response.status === 400) {
+                    showResult(
+                        `✅ CORS is working! (Login failed as expected)\n\n` +
+                        `Status: ${response.status} ${response.statusText}\n` +
+                        `This is expected with dummy credentials.\n` +
+                        `The important thing is that the request was not blocked by CORS!\n\n` +
+                        `CORS Headers:\n` +
+                        `Access-Control-Allow-Origin: ${response.headers.get('Access-Control-Allow-Origin')}`,
+                        'success'
+                    );
+                } else {
+                    showResult(
+                        `❌ HTTP Error\n\n` +
+                        `Status: ${response.status} ${response.statusText}\n` +
+                        `Response: ${await response.text()}`,
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult(
+                    `❌ CORS or Network Error\n\n` +
+                    `Error: ${error.message}\n\n` +
+                    `This usually means:\n` +
+                    `1. CORS headers are not properly configured\n` +
+                    `2. Backend server is not responding\n` +
+                    `3. Network connectivity issue`,
+                    'error'
+                );
+            }
+        }
+    </script>
+</body>
+</html>
