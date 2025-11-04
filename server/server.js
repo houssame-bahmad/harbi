@@ -29,8 +29,10 @@ app.use('/api/media', cors({
 const allowedOrigins = [
   'https://benmina.com',
   'https://www.benmina.com',
+  'https://harbi.benmina.com',  // ✅ Added subdomain
   'http://benmina.com',
   'http://www.benmina.com',
+  'http://harbi.benmina.com',   // ✅ Added subdomain
   process.env.CORS_ORIGIN,
   'http://localhost:5173', // optional: for local development
   'http://localhost:5174'
