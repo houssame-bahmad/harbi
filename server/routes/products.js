@@ -11,7 +11,19 @@ router.get('/', async (req, res) => {
       'SELECT * FROM products ORDER BY created_at DESC'
     );
 
-    res.json(products);
+    // Convert price to number and ensure proper data types
+    const formattedProducts = products.map(product => ({
+      ...product,
+      id: parseInt(product.id),
+      price: parseFloat(product.price),
+      stock: parseInt(product.stock),
+      inStock: Boolean(product.in_stock),
+      imageUrl: product.image_url,
+      createdAt: product.created_at,
+      updatedAt: product.updated_at
+    }));
+
+    res.json(formattedProducts);
   } catch (error) {
     console.error('Get products error:', error);
     res.status(500).json({
@@ -34,7 +46,21 @@ router.get('/:id', async (req, res) => {
       });
     }
 
-    res.json(products[0]);
+    const product = products[0];
+    
+    // Format product data
+    const formattedProduct = {
+      ...product,
+      id: parseInt(product.id),
+      price: parseFloat(product.price),
+      stock: parseInt(product.stock),
+      inStock: Boolean(product.in_stock),
+      imageUrl: product.image_url,
+      createdAt: product.created_at,
+      updatedAt: product.updated_at
+    };
+
+    res.json(formattedProduct);
   } catch (error) {
     console.error('Get product error:', error);
     res.status(500).json({
