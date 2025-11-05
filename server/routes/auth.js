@@ -67,7 +67,10 @@ router.post('/login',
         user: {
           id: user.id,
           email: user.email,
-          role: user.role
+          role: user.role,
+          fullName: user.full_name || '',
+          phoneNumber: user.phone || '',
+          createdAt: user.created_at
         },
         token
       });
@@ -85,7 +88,7 @@ router.post('/login',
 router.get('/me', authMiddleware, async (req, res) => {
   try {
     const [users] = await db.query(
-      'SELECT id, email, role, created_at FROM users WHERE id = ?',
+      'SELECT id, email, role, full_name, phone, created_at FROM users WHERE id = ?',
       [req.user.id]
     );
 
@@ -95,7 +98,17 @@ router.get('/me', authMiddleware, async (req, res) => {
       });
     }
 
-    res.json({ user: users[0] });
+    const user = users[0];
+    res.json({ 
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        fullName: user.full_name || '',
+        phoneNumber: user.phone || '',
+        createdAt: user.created_at
+      }
+    });
 
   } catch (error) {
     console.error('Get user error:', error);

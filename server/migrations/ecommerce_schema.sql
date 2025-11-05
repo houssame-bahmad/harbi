@@ -81,4 +81,30 @@ INSERT INTO products (name, description, price, category, image_url, stock, in_s
 ('Vitamin D3', 'High potency vitamin D supplement', 15.99, 'Vitamins', 'https://images.unsplash.com/photo-1550572017-4ec3683533c6?w=400', 80, TRUE)
 ON DUPLICATE KEY UPDATE name=name;
 
+-- Create admin user
+-- Email: admin@exemple.com
+-- Password: admin123
+INSERT INTO users (id, email, password, role, full_name, created_at)
+VALUES (
+  UUID(),
+  'admin@exemple.com',
+  '$2a$10$0eAO7aEvnfijwr13vT3fkuOtxglNfkCpRvn5Uq6KnFeto2aeMUgde',
+  'admin',
+  'Administrator',
+  NOW()
+) ON DUPLICATE KEY UPDATE email=email;
+
+-- Create customer user
+-- Email: customer@exemple.com
+-- Password: customer123
+INSERT INTO users (id, email, password, role, full_name, created_at)
+VALUES (
+  UUID(),
+  'customer@exemple.com',
+  '$2a$10$Eru48kKGUvf8XiORVGfBPOesosJ/iLuRUT.h1xzGWisG6.BGZcx26',
+  'customer',
+  'Test Customer',
+  NOW()
+) ON DUPLICATE KEY UPDATE email=email;
+
 SELECT 'E-commerce schema created successfully!' as message;
