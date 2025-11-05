@@ -11,14 +11,24 @@ router.get('/', async (req, res) => {
       'SELECT * FROM products ORDER BY created_at DESC'
     );
 
-    // Convert price to number and ensure proper data types
+    // Convert to match frontend Product interface
     const formattedProducts = products.map(product => ({
-      ...product,
       id: parseInt(product.id),
+      categoryId: 1, // Default category, you can map this from product.category
+      hostId: 1, // Default host
+      name: product.name,
+      description: product.description || '',
       price: parseFloat(product.price),
+      stockQuantity: parseInt(product.stock),
+      imageUrl: product.image_url || '',
+      isActive: Boolean(product.in_stock),
+      ingredients: [], // Empty array by default
+      specs: [], // Empty array by default
+      reviews: [], // Empty array by default
+      // Also include snake_case for backward compatibility
+      category: product.category,
       stock: parseInt(product.stock),
       inStock: Boolean(product.in_stock),
-      imageUrl: product.image_url,
       createdAt: product.created_at,
       updatedAt: product.updated_at
     }));
@@ -48,14 +58,23 @@ router.get('/:id', async (req, res) => {
 
     const product = products[0];
     
-    // Format product data
+    // Format to match frontend Product interface
     const formattedProduct = {
-      ...product,
       id: parseInt(product.id),
+      categoryId: 1,
+      hostId: 1,
+      name: product.name,
+      description: product.description || '',
       price: parseFloat(product.price),
+      stockQuantity: parseInt(product.stock),
+      imageUrl: product.image_url || '',
+      isActive: Boolean(product.in_stock),
+      ingredients: [],
+      specs: [],
+      reviews: [],
+      category: product.category,
       stock: parseInt(product.stock),
       inStock: Boolean(product.in_stock),
-      imageUrl: product.image_url,
       createdAt: product.created_at,
       updatedAt: product.updated_at
     };
