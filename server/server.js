@@ -83,6 +83,9 @@ app.use('/uploads', express.static('uploads'));
 // 🔀 Import routes
 const authRoutes = require('./routes/auth');
 const projectsRoutes = require('./routes/projects');
+const productsRoutes = require('./routes/products');
+const ordersRoutes = require('./routes/orders');
+const usersRoutes = require('./routes/users');
 const reviewsRoutes = require('./routes/reviews');
 const plansRoutes = require('./routes/plans');
 const aboutRoutes = require('./routes/about');
@@ -92,6 +95,9 @@ const mediaRoutes = require('./routes/media');
 // 📡 API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectsRoutes);
+app.use('/api/products', productsRoutes);
+app.use('/api/orders', ordersRoutes);
+app.use('/api/users', usersRoutes);
 app.use('/api/reviews', reviewsRoutes);
 app.use('/api/plans', plansRoutes);
 app.use('/api/about', aboutRoutes);

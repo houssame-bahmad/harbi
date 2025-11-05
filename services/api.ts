@@ -1,6 +1,6 @@
 import { User, Product, Category, Order, OrderStatus, PaymentStatus, UserRole } from '../types';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://houssame-production.up.railway.app/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://web-production-5b48e.up.railway.app/api';
 
 // Log API configuration on load
 console.log('🔧 API CONFIGURATION:');
