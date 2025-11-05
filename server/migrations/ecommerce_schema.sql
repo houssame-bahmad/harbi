@@ -3,7 +3,7 @@
 
 -- Update users table to support e-commerce roles
 ALTER TABLE users 
-MODIFY COLUMN role ENUM('admin', 'editor', 'viewer', 'customer', 'delivery') DEFAULT 'customer';
+MODIFY COLUMN role ENUM('admin', 'editor', 'viewer', 'user', 'delivery') DEFAULT 'user';
 
 -- Add additional user fields for e-commerce
 ALTER TABLE users 
@@ -102,7 +102,7 @@ VALUES (
   UUID(),
   'customer@exemple.com',
   '$2a$10$Eru48kKGUvf8XiORVGfBPOesosJ/iLuRUT.h1xzGWisG6.BGZcx26',
-  'customer',
+  'user',
   'Test Customer',
   NOW()
 ) ON DUPLICATE KEY UPDATE email=email;

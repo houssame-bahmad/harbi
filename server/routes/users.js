@@ -42,7 +42,7 @@ router.patch('/:id/role', authMiddleware, adminOnly, async (req, res) => {
     const { role } = req.body;
 
     // Validate role
-    const validRoles = ['admin', 'editor', 'viewer', 'customer', 'delivery'];
+    const validRoles = ['admin', 'editor', 'viewer', 'user', 'delivery'];
     if (!validRoles.includes(role)) {
       return res.status(400).json({
         error: { message: 'Invalid role', status: 400 }
