@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Link, useParams, useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { api } from './services/api';
-import { User, Product, CartItem, UserRole, Order, OrderStatus, Category, PaymentStatus } from './types';
+import { User, Product, CartItem, UserRole, Order, OrderStatus, Category, PaymentStatus, SaleBanner } from './types';
 import { Button, Card, Icons, Input, Modal } from './components/ui';
 
 // --- CURRENCY FORMATTER ---
@@ -46,10 +46,10 @@ const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
-    const loggedInUser = await api.login(email, password);
-    if (loggedInUser) {
-      setUser(loggedInUser);
-      localStorage.setItem('user', JSON.stringify(loggedInUser));
+    const response = await api.login(email, password);
+    if (response && response.user) {
+      setUser(response.user);
+      localStorage.setItem('user', JSON.stringify(response.user));
       setIsLoading(false);
       return true;
     }
@@ -60,9 +60,9 @@ const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const register = async (userData: { email: string; fullName: string; phoneNumber: string; password: string }) => {
     setIsLoading(true);
     try {
-      const newUser = await api.register(userData);
-      setUser(newUser);
-      localStorage.setItem('user', JSON.stringify(newUser));
+      const response = await api.register(userData.email, userData.password, userData.fullName, userData.phoneNumber);
+      setUser(response.user);
+      localStorage.setItem('user', JSON.stringify(response.user));
       setIsLoading(false);
       return true;
     } catch (error) {
@@ -226,6 +226,12 @@ const Navbar = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                       </svg>
                       <span className="hidden lg:inline">Products</span>
+                    </Link>
+                    <Link to="/admin/banners" className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                      </svg>
+                      <span className="hidden lg:inline">Banners</span>
                     </Link>
                   </>
                 )}
@@ -575,15 +581,17 @@ const HomePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [saleBanners, setSaleBanners] = useState<SaleBanner[]>([]);
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     let mounted = true;
-    Promise.all([api.getAllProducts(), api.getCategories()]).then(([prods, cats]) => {
+    Promise.all([api.getAllProducts(), api.getCategories(), api.getAllBanners()]).then(([prods, cats, banners]) => {
       if (!mounted) return;
       setProducts(prods);
       setCategories(cats);
+      setSaleBanners(banners);
       setLoading(false);
     });
     return () => { mounted = false; };
@@ -605,51 +613,40 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      <div className="hero">
-        <div className="flex flex-col lg:flex-row justify-between items-center gap-8">
-          <div className="flex-1 text-center lg:text-left">
-            <div className="inline-block mb-4 px-4 py-2 bg-accent/10 text-accent rounded-full text-sm font-semibold shadow-sm">
-              Trusted Healthcare Products
+      {/* Promotional Banners - Sale Posters */}
+      {saleBanners.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {saleBanners.map((banner) => (
+            <div key={banner.id} className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${banner.backgroundColor} shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer`}>
+              <div className="absolute inset-0 bg-black/10"></div>
+              {banner.imageUrl && (
+                <img src={banner.imageUrl} alt={banner.title} className="absolute inset-0 w-full h-full object-cover opacity-30" />
+              )}
+              <div className="relative p-8 text-white">
+                {banner.subtitle && (
+                  <div className="inline-block mb-3 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-bold uppercase tracking-wider">
+                    {banner.subtitle}
+                  </div>
+                )}
+                <h2 className="text-4xl font-bold mb-2">{banner.title}</h2>
+                {banner.discountText && (
+                  <p className="text-6xl font-black mb-2">{banner.discountText}</p>
+                )}
+                {banner.description && (
+                  <p className="text-lg mb-4 opacity-90">{banner.description}</p>
+                )}
+                <button 
+                  onClick={() => banner.buttonLink !== '#' && (window.location.href = banner.buttonLink)}
+                  className="px-6 py-3 bg-white text-gray-900 font-bold rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
+                >
+                  {banner.buttonText}
+                </button>
+              </div>
+              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
             </div>
-            <h1 className="text-4xl lg:text-5xl xl:text-6xl mb-4 leading-tight font-bold">
-              Discover Wellness<br />
-              <span className="gradient-text">Essentials</span>
-            </h1>
-            <p className="text-lg text-gray-600 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              Curated parapharmacie products selected for quality and safety. From premium skincare to essential vitamins and personal care.
-            </p>
-            <div className="flex gap-4 justify-center lg:justify-start flex-wrap">
-              <Button onClick={() => window.scrollTo({ top: 600, behavior: 'smooth' })} className="bg-primary hover:bg-primary-focus text-white px-8 py-3 text-base">
-                <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                Shop Now
-              </Button>
-              <Button variant="ghost" className="border-2 border-primary text-primary hover:bg-primary hover:text-white px-8 py-3 text-base">
-                <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Learn More
-              </Button>
-            </div>
-          </div>
-          <div className="hidden lg:block">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full blur-3xl"></div>
-              <svg width="360" height="360" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative drop-shadow-2xl">
-                <path d="M12 2L4 5V11.09C4 16.14 7.41 20.85 12 22C16.59 20.85 20 16.14 20 11.09V5L12 2Z" fill="url(#gradient)" opacity="0.9"/>
-                <path d="M9 12L11 14L15 10" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <defs>
-                  <linearGradient id="gradient" x1="0" y1="0" x2="24" y2="24">
-                    <stop offset="0%" stopColor="#00A896"/>
-                    <stop offset="100%" stopColor="#4ECDC4"/>
-                  </linearGradient>
-                </defs>
-              </svg>
-            </div>
-          </div>
+          ))}
         </div>
-      </div>
+      )}
 
       <div className="mb-8">
         <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Browse by Category</h3>
@@ -1684,10 +1681,10 @@ const AdminUserManagement: React.FC = () => {
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-accent flex items-center justify-center text-white font-bold shadow-md">
-                                                {u.fullName.charAt(0).toUpperCase()}
+                                                {(u.fullName && u.fullName.trim() ? u.fullName : (u.email ? u.email : 'U')).charAt(0).toUpperCase()}
                                             </div>
                                             <div>
-                                                <div className="font-semibold text-gray-900">{u.fullName}</div>
+                                                <div className="font-semibold text-gray-900">{u.fullName || u.email || 'Unknown User'}</div>
                                                 <div className="text-xs text-gray-500">ID: #{u.id}</div>
                                             </div>
                                         </div>
@@ -1704,7 +1701,7 @@ const AdminUserManagement: React.FC = () => {
                                                 <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                                 </svg>
-                                                <span className="text-sm">{u.phoneNumber}</span>
+                                                <span className="text-sm">{u.phoneNumber || 'No phone'}</span>
                                             </div>
                                         </div>
                                     </td>
@@ -2049,7 +2046,7 @@ const AdminOrderManagement: React.FC = () => {
                   </svg>
                   <span className="text-xs font-semibold text-gray-500 uppercase">Phone</span>
                 </div>
-                <p className="text-gray-900 font-medium">{selectedUser.phoneNumber}</p>
+                <p className="text-gray-900 font-medium">{selectedUser.phoneNumber || 'No phone number'}</p>
               </div>
             </div>
 
@@ -2114,6 +2111,323 @@ const AdminOrderManagement: React.FC = () => {
     
 };
 
+// --- BANNER MANAGEMENT PAGE ---
+const BannerManagementPage: React.FC = () => {
+  const [banners, setBanners] = useState<SaleBanner[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editingBanner, setEditingBanner] = useState<SaleBanner | null>(null);
+  const [formData, setFormData] = useState({
+    title: '',
+    subtitle: '',
+    discountText: '',
+    description: '',
+    imageUrl: '',
+    backgroundColor: 'from-red-500 via-pink-500 to-orange-500',
+    buttonText: 'Shop Now',
+    buttonLink: '#',
+    displayOrder: 0,
+    isActive: true
+  });
+
+  const colorOptions = [
+    { value: 'from-red-500 via-pink-500 to-orange-500', label: 'Red/Pink/Orange', preview: 'bg-gradient-to-r from-red-500 via-pink-500 to-orange-500' },
+    { value: 'from-green-500 via-emerald-500 to-teal-500', label: 'Green/Emerald/Teal', preview: 'bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500' },
+    { value: 'from-purple-600 via-blue-600 to-indigo-600', label: 'Purple/Blue/Indigo', preview: 'bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600' },
+    { value: 'from-yellow-400 via-orange-500 to-red-500', label: 'Yellow/Orange/Red', preview: 'bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500' },
+    { value: 'from-pink-500 via-purple-500 to-indigo-500', label: 'Pink/Purple/Indigo', preview: 'bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500' },
+    { value: 'from-cyan-500 via-blue-500 to-purple-600', label: 'Cyan/Blue/Purple', preview: 'bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600' }
+  ];
+
+  useEffect(() => {
+    loadBanners();
+  }, []);
+
+  const loadBanners = async () => {
+    try {
+      setIsLoading(true);
+      const data = await api.getAllBannersAdmin();
+      setBanners(data);
+    } catch (error) {
+      console.error('Error loading banners:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingBanner) {
+        await api.updateBanner(editingBanner.id, formData);
+      } else {
+        await api.createBanner(formData);
+      }
+      await loadBanners();
+      handleCloseModal();
+    } catch (error) {
+      console.error('Error saving banner:', error);
+    }
+  };
+
+  const handleEdit = (banner: SaleBanner) => {
+    setEditingBanner(banner);
+    setFormData({
+      title: banner.title,
+      subtitle: banner.subtitle,
+      discountText: banner.discountText,
+      description: banner.description,
+      imageUrl: banner.imageUrl,
+      backgroundColor: banner.backgroundColor,
+      buttonText: banner.buttonText,
+      buttonLink: banner.buttonLink,
+      displayOrder: banner.displayOrder,
+      isActive: banner.isActive
+    });
+    setShowModal(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (confirm('Are you sure you want to delete this banner?')) {
+      try {
+        await api.deleteBanner(id);
+        await loadBanners();
+      } catch (error) {
+        console.error('Error deleting banner:', error);
+      }
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingBanner(null);
+    setFormData({
+      title: '',
+      subtitle: '',
+      discountText: '',
+      description: '',
+      imageUrl: '',
+      backgroundColor: 'from-red-500 via-pink-500 to-orange-500',
+      buttonText: 'Shop Now',
+      buttonLink: '#',
+      displayOrder: 0,
+      isActive: true
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Sale Banner Management</h1>
+          <p className="text-gray-600 mt-2">Manage promotional banners displayed on the homepage</p>
+        </div>
+        <Button onClick={() => setShowModal(true)} className="bg-primary hover:bg-primary-focus text-white">
+          <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Add New Banner
+        </Button>
+      </div>
+
+      {/* Banner Preview Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {banners.map(banner => (
+          <div key={banner.id} className="relative group">
+            <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${banner.backgroundColor} shadow-xl transition-all duration-300`}>
+              <div className="absolute inset-0 bg-black/10"></div>
+              <div className="relative p-8 text-white">
+                {banner.subtitle && (
+                  <div className="inline-block mb-3 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-bold uppercase tracking-wider">
+                    {banner.subtitle}
+                  </div>
+                )}
+                <h2 className="text-3xl font-bold mb-2">{banner.title}</h2>
+                {banner.discountText && (
+                  <p className="text-5xl font-black mb-2">{banner.discountText}</p>
+                )}
+                {banner.description && (
+                  <p className="text-lg mb-4 opacity-90">{banner.description}</p>
+                )}
+                <button className="px-6 py-3 bg-white text-gray-900 font-bold rounded-lg shadow-lg">
+                  {banner.buttonText}
+                </button>
+                {!banner.isActive && (
+                  <div className="absolute top-4 right-4 px-3 py-1 bg-red-500 rounded-full text-xs font-bold">
+                    INACTIVE
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="absolute top-4 left-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={() => handleEdit(banner)}
+                className="p-2 bg-white rounded-lg shadow-lg hover:bg-gray-100"
+                title="Edit"
+              >
+                <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+              <button
+                onClick={() => handleDelete(banner.id)}
+                className="p-2 bg-white rounded-lg shadow-lg hover:bg-red-50"
+                title="Delete"
+              >
+                <svg className="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="mt-2 text-sm text-gray-600">
+              Order: {banner.displayOrder} | Status: {banner.isActive ? '✅ Active' : '❌ Inactive'}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Add/Edit Modal */}
+      {showModal && (
+        <Modal onClose={handleCloseModal}>
+          <div className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <h2 className="text-2xl font-bold mb-6">{editingBanner ? 'Edit Banner' : 'Add New Banner'}</h2>
+            
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                <Input
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="MEGA SALE"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Subtitle</label>
+                <Input
+                  value={formData.subtitle}
+                  onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
+                  placeholder="Limited Time"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Discount Text</label>
+                <Input
+                  value={formData.discountText}
+                  onChange={(e) => setFormData({ ...formData, discountText: e.target.value })}
+                  placeholder="50% OFF"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <Input
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="On selected products"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                <Input
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Background Color</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {colorOptions.map(option => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, backgroundColor: option.value })}
+                      className={`p-3 rounded-lg border-2 transition-all ${
+                        formData.backgroundColor === option.value ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200'
+                      }`}
+                    >
+                      <div className={`h-8 rounded ${option.preview} mb-2`}></div>
+                      <p className="text-xs text-gray-700">{option.label}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Button Text</label>
+                  <Input
+                    value={formData.buttonText}
+                    onChange={(e) => setFormData({ ...formData, buttonText: e.target.value })}
+                    placeholder="Shop Now"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Button Link</label>
+                  <Input
+                    value={formData.buttonLink}
+                    onChange={(e) => setFormData({ ...formData, buttonLink: e.target.value })}
+                    placeholder="#"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
+                  <Input
+                    type="number"
+                    value={formData.displayOrder}
+                    onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) })}
+                  />
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-2 pt-8">
+                    <input
+                      type="checkbox"
+                      checked={formData.isActive}
+                      onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                      className="w-4 h-4 text-primary rounded"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Active</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <Button type="submit" className="flex-1 bg-primary hover:bg-primary-focus text-white">
+                  {editingBanner ? 'Update Banner' : 'Create Banner'}
+                </Button>
+                <Button type="button" onClick={handleCloseModal} variant="ghost" className="flex-1">
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+};
+
 const AdminDashboard: React.FC = () => {
   return (
     <div className="space-y-8">
@@ -2158,6 +2472,7 @@ export default function App() {
               {/* Admin Routes */}
               <Route path="admin" element={<ProtectedRoute allowedRoles={[UserRole.ADMIN]} />}>
                  <Route index element={<AdminDashboard />} />
+                 <Route path="banners" element={<BannerManagementPage />} />
               </Route>
 
             </Route>

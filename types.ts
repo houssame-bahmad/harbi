@@ -73,3 +73,19 @@ export interface Order {
 export interface CartItem extends Product {
   quantity: number;
 }
+
+export interface SaleBanner {
+  id: number;
+  title: string;
+  subtitle: string;
+  discountText: string;
+  description: string;
+  imageUrl: string;
+  backgroundColor: string;
+  buttonText: string;
+  buttonLink: string;
+  isActive: boolean;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}

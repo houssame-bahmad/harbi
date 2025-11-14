@@ -91,6 +91,7 @@ const plansRoutes = require('./routes/plans');
 const aboutRoutes = require('./routes/about');
 const contactRoutes = require('./routes/contact');
 const mediaRoutes = require('./routes/media');
+const bannersRoutes = require('./routes/banners');
 
 // 📡 API routes
 app.use('/api/auth', authRoutes);
@@ -98,6 +99,7 @@ app.use('/api/projects', projectsRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/orders', ordersRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/banners', bannersRoutes);
 app.use('/api/reviews', reviewsRoutes);
 app.use('/api/plans', plansRoutes);
 app.use('/api/about', aboutRoutes);

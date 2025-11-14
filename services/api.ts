@@ -1,4 +1,4 @@
-import { User, Product, Category, Order, OrderStatus, PaymentStatus, UserRole } from '../types';
+import { User, Product, Category, Order, OrderStatus, PaymentStatus, UserRole, SaleBanner } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://web-production-5b48e.up.railway.app/api';
 
@@ -193,6 +193,40 @@ export const api = {
       { id: 3, name: 'First Aid' },
       { id: 4, name: 'Personal Care' },
     ];
+  },
+
+  // Sale Banners
+  getAllBanners: async (): Promise<SaleBanner[]> => {
+    console.log('🎨 FETCHING all sale banners');
+    return apiRequest('/banners');
+  },
+
+  getAllBannersAdmin: async (): Promise<SaleBanner[]> => {
+    console.log('🎨 FETCHING all sale banners (admin)');
+    return apiRequest('/banners/all');
+  },
+
+  createBanner: async (banner: Omit<SaleBanner, 'id' | 'createdAt' | 'updatedAt'>): Promise<SaleBanner> => {
+    console.log('➕ CREATING new sale banner');
+    return apiRequest('/banners', {
+      method: 'POST',
+      body: JSON.stringify(banner),
+    });
+  },
+
+  updateBanner: async (id: number, banner: Partial<SaleBanner>): Promise<SaleBanner> => {
+    console.log('✏️ UPDATING sale banner:', id);
+    return apiRequest(`/banners/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(banner),
+    });
+  },
+
+  deleteBanner: async (id: number): Promise<void> => {
+    console.log('🗑️ DELETING sale banner:', id);
+    return apiRequest(`/banners/${id}`, {
+      method: 'DELETE',
+    });
   },
 };
 

@@ -10,7 +10,20 @@ router.get('/', authMiddleware, adminOnly, async (req, res) => {
       'SELECT id, email, full_name, role, phone, address, city, postal_code, created_at FROM users ORDER BY created_at DESC'
     );
 
-    res.json(users);
+    // Transform snake_case to camelCase for frontend
+    const formattedUsers = users.map(user => ({
+      id: user.id,
+      email: user.email,
+      fullName: user.full_name || '',
+      role: user.role,
+      phoneNumber: user.phone || '',
+      address: user.address || '',
+      city: user.city || '',
+      postalCode: user.postal_code || '',
+      createdAt: user.created_at
+    }));
+
+    res.json(formattedUsers);
   } catch (error) {
     console.error('Get users error:', error);
     res.status(500).json({
@@ -26,7 +39,15 @@ router.get('/delivery-persons', authMiddleware, adminOnly, async (req, res) => {
       'SELECT id, email, full_name, phone FROM users WHERE role = "delivery" ORDER BY full_name ASC'
     );
 
-    res.json(users);
+    // Transform snake_case to camelCase for frontend
+    const formattedUsers = users.map(user => ({
+      id: user.id,
+      email: user.email,
+      fullName: user.full_name || '',
+      phoneNumber: user.phone || ''
+    }));
+
+    res.json(formattedUsers);
   } catch (error) {
     console.error('Get delivery persons error:', error);
     res.status(500).json({
@@ -55,7 +76,7 @@ router.patch('/:id/role', authMiddleware, adminOnly, async (req, res) => {
     );
 
     const [users] = await db.query(
-      'SELECT id, email, full_name, role, created_at FROM users WHERE id = ?',
+      'SELECT id, email, full_name, role, phone, created_at FROM users WHERE id = ?',
       [id]
     );
 
@@ -65,7 +86,18 @@ router.patch('/:id/role', authMiddleware, adminOnly, async (req, res) => {
       });
     }
 
-    res.json(users[0]);
+    // Transform snake_case to camelCase for frontend
+    const user = users[0];
+    const formattedUser = {
+      id: user.id,
+      email: user.email,
+      fullName: user.full_name || '',
+      role: user.role,
+      phoneNumber: user.phone || '',
+      createdAt: user.created_at
+    };
+
+    res.json(formattedUser);
   } catch (error) {
     console.error('Update user role error:', error);
     res.status(500).json({
