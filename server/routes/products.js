@@ -100,7 +100,12 @@ router.post('/',
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      console.error('Product validation errors:', errors.array());
+      console.error('Request body:', req.body);
+      return res.status(400).json({ 
+        error: { message: 'Validation failed', status: 400 },
+        errors: errors.array() 
+      });
     }
 
     try {

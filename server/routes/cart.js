@@ -24,6 +24,11 @@ router.get('/', authMiddleware, async (req, res) => {
     res.json(cartItems);
   } catch (error) {
     console.error('Get cart error:', error);
+    // If cart_items table doesn't exist yet, return empty cart
+    if (error.code === 'ER_NO_SUCH_TABLE') {
+      console.warn('⚠️  cart_items table does not exist. Please run the migration: CART-MIGRATION-PHPMYADMIN.sql');
+      return res.json([]);
+    }
     res.status(500).json({
       error: { message: 'Failed to get cart', status: 500 }
     });
