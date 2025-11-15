@@ -1782,6 +1782,8 @@ const ProductForm: React.FC<{ product?: Product; onSave: (product: Product) => v
     const [categories, setCategories] = useState<Category[]>([]);
     const [imagePreview, setImagePreview] = useState<string>(product?.imageUrl || 'https://picsum.photos/400/400');
     const [uploadMethod, setUploadMethod] = useState<'url' | 'file'>('url');
+    const [showAddCategory, setShowAddCategory] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
 
     useEffect(() => {
         api.getCategories().then(setCategories);
@@ -1789,6 +1791,12 @@ const ProductForm: React.FC<{ product?: Product; onSave: (product: Product) => v
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
+        
+        // Check if user selected "Add New Category"
+        if (name === 'categoryId' && value === 'add-new') {
+            setShowAddCategory(true);
+            return;
+        }
         
         let processedValue: string | number | boolean = value;
 
@@ -1852,6 +1860,41 @@ const ProductForm: React.FC<{ product?: Product; onSave: (product: Product) => v
             alert(error.message || 'Failed to save product. Please check all required fields.');
         }
     };
+
+    const handleAddCategory = async () => {
+        if (!newCategoryName.trim()) {
+            alert('Please enter a category name');
+            return;
+        }
+
+        // Check if category already exists
+        if (categories.some(c => c.name.toLowerCase() === newCategoryName.trim().toLowerCase())) {
+            alert('This category already exists');
+            return;
+        }
+
+        try {
+            // Create slug from name
+            const slug = newCategoryName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            
+            // Add to local categories list
+            const newId = Math.max(...categories.map(c => c.id), 0) + 1;
+            const newCategory = { 
+                id: newId, 
+                name: newCategoryName.trim(), 
+                slug 
+            };
+            
+            setCategories([...categories, newCategory]);
+            setFormData({ ...formData, categoryId: newId });
+            setNewCategoryName('');
+            setShowAddCategory(false);
+            
+            alert(`Category "${newCategoryName}" added successfully!`);
+        } catch (error: any) {
+            alert(error.message || 'Failed to add category');
+        }
+    };
     
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -1866,10 +1909,61 @@ const ProductForm: React.FC<{ product?: Product; onSave: (product: Product) => v
             </div>
             <div>
                 <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700">Category</label>
-                <select name="categoryId" value={formData.categoryId} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
-                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+                <div className="flex gap-2">
+                    <select 
+                        name="categoryId" 
+                        value={formData.categoryId} 
+                        onChange={handleChange} 
+                        className="flex-1 mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                    >
+                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        <option value="add-new" style={{ fontWeight: 'bold', color: '#ec4249' }}>+ Add New Category</option>
+                    </select>
+                    <button
+                        type="button"
+                        onClick={() => setShowAddCategory(true)}
+                        className="mt-1 px-4 py-2 bg-[#ec4249] text-white rounded-md hover:bg-[#d63940] transition-colors"
+                    >
+                        +
+                    </button>
+                </div>
             </div>
+
+            {/* Add Category Modal */}
+            {showAddCategory && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                        <h3 className="text-lg font-semibold mb-4">Add New Category</h3>
+                        <input
+                            type="text"
+                            value={newCategoryName}
+                            onChange={(e) => setNewCategoryName(e.target.value)}
+                            placeholder="Enter category name"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCategory())}
+                        />
+                        <div className="flex gap-2 mt-4">
+                            <button
+                                type="button"
+                                onClick={handleAddCategory}
+                                className="flex-1 px-4 py-2 bg-[#ec4249] text-white rounded-md hover:bg-[#d63940] transition-colors"
+                            >
+                                Add Category
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowAddCategory(false);
+                                    setNewCategoryName('');
+                                }}
+                                className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             
             {/* Image Upload Section */}
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
