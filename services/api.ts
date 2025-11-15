@@ -50,9 +50,13 @@ async function apiRequest(endpoint: string, options: RequestInit = {}) {
     console.log(`   📡 Response status: ${response.status} ${response.statusText}`);
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Request failed' }));
-      console.log('   ❌ Request failed:', error.error);
-      throw new Error(error.error || `HTTP ${response.status}`);
+      const error = await response.json().catch(() => ({ error: { message: 'Request failed' } }));
+      const errorMessage = error.error?.message || error.error || error.errors?.[0]?.msg || `HTTP ${response.status}`;
+      console.log('   ❌ Request failed:', errorMessage);
+      if (error.errors) {
+        console.log('   ❌ Validation errors:', error.errors);
+      }
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
