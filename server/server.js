@@ -92,6 +92,7 @@ const aboutRoutes = require('./routes/about');
 const contactRoutes = require('./routes/contact');
 const mediaRoutes = require('./routes/media');
 const bannersRoutes = require('./routes/banners');
+const cartRoutes = require('./routes/cart');
 
 // 📡 API routes
 app.use('/api/auth', authRoutes);
@@ -105,6 +106,7 @@ app.use('/api/plans', plansRoutes);
 app.use('/api/about', aboutRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/media', mediaRoutes);
+app.use('/api/cart', cartRoutes);
 
 // ❤️ Health check endpoint (for uptime monitoring)
 app.get('/api/health', (req, res) => {

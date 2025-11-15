@@ -73,10 +73,6 @@ const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   };
 
   const logout = () => {
-    // Clear user-specific cart on logout
-    if (user) {
-      localStorage.removeItem(`cart_user_${user.id}`);
-    }
     setUser(null);
     localStorage.removeItem('user');
   };
@@ -107,59 +103,138 @@ const useCart = () => {
 
 const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user } = useAuth();
-  
-  // Get cart key based on user ID (user-specific cart)
-  const getCartKey = () => {
-    return user ? `cart_user_${user.id}` : 'cart_guest';
-  };
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    const cartKey = user ? `cart_user_${user.id}` : 'cart_guest';
-    const savedCart = localStorage.getItem(cartKey);
-    return savedCart ? JSON.parse(savedCart) : [];
-  });
-
-  // Save cart to localStorage whenever it changes or user changes
+  // Load cart from database when user logs in
   useEffect(() => {
-    const cartKey = getCartKey();
-    localStorage.setItem(cartKey, JSON.stringify(cart));
-  }, [cart, user]);
+    const loadCart = async () => {
+      if (!user) {
+        setCart([]);
+        setLoading(false);
+        return;
+      }
 
-  // Load user-specific cart when user logs in/out
-  useEffect(() => {
-    const cartKey = getCartKey();
-    const savedCart = localStorage.getItem(cartKey);
-    setCart(savedCart ? JSON.parse(savedCart) : []);
+      try {
+        setLoading(true);
+        const cartData = await api.getCart();
+        // Map backend response to CartItem format
+        const formattedCart = cartData.map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          imageUrl: item.imageUrl,
+          description: item.description,
+          stockQuantity: item.stockQuantity,
+          quantity: item.quantity,
+          cart_item_id: item.cart_item_id, // Store for updates/deletes
+        }));
+        setCart(formattedCart);
+      } catch (error) {
+        console.error('Failed to load cart:', error);
+        setCart([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCart();
   }, [user?.id]);
 
-  const addToCart = (product: Product) => {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id);
-      if (existingItem) {
-        return prevCart.map(item =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
-      }
-      return [...prevCart, { ...product, quantity: 1 }];
-    });
-  };
+  const addToCart = async (product: Product) => {
+    if (!user) {
+      alert('Veuillez vous connecter pour ajouter des articles au panier');
+      return;
+    }
 
-  const removeFromCart = (productId: number) => {
-    setCart(prevCart => prevCart.filter(item => item.id !== productId));
-  };
-
-  const updateQuantity = (productId: number, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(productId);
-    } else {
-      setCart(prevCart => prevCart.map(item =>
-        item.id === productId ? { ...item, quantity: quantity } : item
-      ));
+    try {
+      const response = await api.addToCart(product.id, 1);
+      // Update local cart with response
+      const formattedCart = response.cart.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        imageUrl: item.imageUrl,
+        description: item.description,
+        stockQuantity: item.stockQuantity,
+        quantity: item.quantity,
+        cart_item_id: item.cart_item_id,
+      }));
+      setCart(formattedCart);
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+      alert('Échec de l\'ajout au panier');
     }
   };
 
-  const clearCart = () => {
-    setCart([]);
+  const removeFromCart = async (productId: number) => {
+    if (!user) return;
+
+    try {
+      const cartItem = cart.find(item => item.id === productId);
+      if (!cartItem || !cartItem.cart_item_id) return;
+
+      const response = await api.removeCartItem(cartItem.cart_item_id);
+      const formattedCart = response.cart.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        imageUrl: item.imageUrl,
+        description: item.description,
+        stockQuantity: item.stockQuantity,
+        quantity: item.quantity,
+        cart_item_id: item.cart_item_id,
+      }));
+      setCart(formattedCart);
+    } catch (error) {
+      console.error('Failed to remove from cart:', error);
+      alert('Échec de la suppression du panier');
+    }
+  };
+
+  const updateQuantity = async (productId: number, quantity: number) => {
+    if (!user) return;
+
+    if (quantity <= 0) {
+      removeFromCart(productId);
+      return;
+    }
+
+    try {
+      const cartItem = cart.find(item => item.id === productId);
+      if (!cartItem || !cartItem.cart_item_id) return;
+
+      const response = await api.updateCartItem(cartItem.cart_item_id, quantity);
+      const formattedCart = response.cart.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        imageUrl: item.imageUrl,
+        description: item.description,
+        stockQuantity: item.stockQuantity,
+        quantity: item.quantity,
+        cart_item_id: item.cart_item_id,
+      }));
+      setCart(formattedCart);
+    } catch (error) {
+      console.error('Failed to update cart:', error);
+      alert('Échec de la mise à jour du panier');
+    }
+  };
+
+  const clearCart = async () => {
+    if (!user) {
+      setCart([]);
+      return;
+    }
+
+    try {
+      await api.clearCart();
+      setCart([]);
+    } catch (error) {
+      console.error('Failed to clear cart:', error);
+      alert('Échec du vidage du panier');
+    }
   };
 
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);

@@ -263,6 +263,37 @@ export const api = {
       reader.readAsDataURL(file);
     });
   },
+
+  // Cart
+  getCart: async (): Promise<any[]> => {
+    return await apiRequest('/cart', { method: 'GET' });
+  },
+
+  addToCart: async (productId: number, quantity: number = 1): Promise<any> => {
+    return await apiRequest('/cart/add', {
+      method: 'POST',
+      body: JSON.stringify({ productId, quantity }),
+    });
+  },
+
+  updateCartItem: async (cartItemId: number, quantity: number): Promise<any> => {
+    return await apiRequest(`/cart/update/${cartItemId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ quantity }),
+    });
+  },
+
+  removeCartItem: async (cartItemId: number): Promise<any> => {
+    return await apiRequest(`/cart/remove/${cartItemId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  clearCart: async (): Promise<any> => {
+    return await apiRequest('/cart/clear', {
+      method: 'DELETE',
+    });
+  },
 };
 
 export default api;
