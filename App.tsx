@@ -636,77 +636,110 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      {/* Bootstrap-style Carousel for Sale Banners */}
+      {/* Modern Hero Carousel */}
       {saleBanners.length > 0 && (
         <div 
-          className="relative w-full overflow-hidden rounded-lg shadow-xl"
+          className="relative w-full overflow-hidden rounded-2xl"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
           {/* Carousel Inner */}
-          <div className="relative h-[340px] md:h-[400px] lg:h-[500px]">
+          <div className="relative h-[400px] md:h-[500px] lg:h-[600px]">
             {saleBanners.map((banner, index) => (
               <div
                 key={banner.id}
-                className={`absolute inset-0 w-full h-full transition-opacity duration-700 ${
-                  index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                className={`absolute inset-0 w-full h-full transition-all duration-1000 ease-in-out ${
+                  index === currentSlide 
+                    ? 'opacity-100 scale-100 z-10' 
+                    : 'opacity-0 scale-105 z-0'
                 }`}
               >
-                <a href={banner.buttonLink !== '#' ? banner.buttonLink : undefined} className="block w-full h-full">
-                  <div className={`relative w-full h-full bg-gradient-to-br ${banner.backgroundColor}`}>
-                    {banner.imageUrl && (
+                <a 
+                  href={banner.buttonLink !== '#' ? banner.buttonLink : undefined} 
+                  className="block w-full h-full group"
+                >
+                  {/* Background Image with Parallax Effect */}
+                  <div className="relative w-full h-full overflow-hidden">
+                    {banner.imageUrl ? (
                       <img 
                         src={banner.imageUrl} 
                         alt={banner.title} 
-                        className="absolute inset-0 w-full h-full object-cover"
+                        className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-[3000ms] ease-out"
                         loading="lazy"
                       />
+                    ) : (
+                      <div className={`absolute inset-0 w-full h-full bg-gradient-to-br ${banner.backgroundColor}`}></div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60"></div>
                     
-                    {/* Banner Content - Optional overlay text */}
-                    {(banner.title || banner.subtitle || banner.discountText) && (
-                      <div className="absolute inset-0 flex items-center justify-center text-center text-white p-8">
+                    {/* Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
+                    
+                    {/* Content Container */}
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="container mx-auto px-6 md:px-12 lg:px-16">
                         <div className="max-w-2xl">
+                          {/* Subtitle Badge */}
                           {banner.subtitle && (
-                            <div className="inline-block mb-3 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-bold uppercase tracking-wider">
-                              {banner.subtitle}
+                            <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 bg-gradient-to-r from-emerald-500/90 to-teal-500/90 backdrop-blur-md rounded-full shadow-lg">
+                              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                              <span className="text-white font-semibold text-sm uppercase tracking-wider">
+                                {banner.subtitle}
+                              </span>
                             </div>
                           )}
+                          
+                          {/* Main Title */}
                           {banner.title && (
-                            <h2 className="text-3xl md:text-5xl font-bold mb-3 drop-shadow-lg">{banner.title}</h2>
+                            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-4 leading-tight drop-shadow-2xl">
+                              {banner.title}
+                            </h1>
                           )}
+                          
+                          {/* Discount Text */}
                           {banner.discountText && (
-                            <p className="text-5xl md:text-7xl font-black mb-3 text-yellow-400 drop-shadow-lg">{banner.discountText}</p>
+                            <div className="mb-4">
+                              <span className="inline-block px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 text-3xl md:text-5xl font-black rounded-2xl shadow-2xl transform -rotate-2">
+                                {banner.discountText}
+                              </span>
+                            </div>
                           )}
+                          
+                          {/* Description */}
                           {banner.description && (
-                            <p className="text-lg md:text-xl mb-4 opacity-90 drop-shadow-md">{banner.description}</p>
+                            <p className="text-lg md:text-xl text-gray-200 mb-6 leading-relaxed max-w-xl">
+                              {banner.description}
+                            </p>
                           )}
+                          
+                          {/* CTA Button */}
                           {banner.buttonText && (
-                            <button className="mt-4 px-8 py-3 bg-white text-gray-900 font-bold rounded-lg hover:bg-yellow-400 transition-colors shadow-lg transform hover:scale-105">
-                              {banner.buttonText}
+                            <button className="group/btn inline-flex items-center gap-3 px-8 py-4 bg-white text-gray-900 font-bold text-lg rounded-xl hover:bg-gradient-to-r hover:from-emerald-400 hover:to-teal-400 hover:text-white transition-all duration-300 shadow-2xl hover:shadow-emerald-500/50 hover:scale-105">
+                              <span>{banner.buttonText}</span>
+                              <svg className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                              </svg>
                             </button>
                           )}
                         </div>
                       </div>
-                    )}
+                    </div>
                   </div>
                 </a>
               </div>
             ))}
           </div>
 
-          {/* Carousel Indicators */}
+          {/* Modern Indicator Dots */}
           {saleBanners.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex items-center gap-2 z-20 bg-black/30 backdrop-blur-md px-4 py-3 rounded-full">
               {saleBanners.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  className={`transition-all duration-300 rounded-full ${
                     index === currentSlide 
-                      ? 'bg-white w-8' 
-                      : 'bg-white/50 hover:bg-white/80'
+                      ? 'w-8 h-2 bg-gradient-to-r from-emerald-400 to-teal-400' 
+                      : 'w-2 h-2 bg-white/60 hover:bg-white/90 hover:scale-125'
                   }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
@@ -714,30 +747,36 @@ const HomePage: React.FC = () => {
             </div>
           )}
 
-          {/* Previous Button */}
+          {/* Sleek Navigation Buttons */}
           {saleBanners.length > 1 && (
-            <button
-              onClick={goToPrev}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/30 hover:bg-black/60 text-white p-3 rounded-full transition-all duration-300 backdrop-blur-sm"
-              aria-label="Previous slide"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
+            <>
+              <button
+                onClick={goToPrev}
+                className="absolute left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full transition-all duration-300 hover:scale-110 border border-white/20"
+                aria-label="Previous slide"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              
+              <button
+                onClick={goToNext}
+                className="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full transition-all duration-300 hover:scale-110 border border-white/20"
+                aria-label="Next slide"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </>
           )}
 
-          {/* Next Button */}
+          {/* Slide Counter */}
           {saleBanners.length > 1 && (
-            <button
-              onClick={goToNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/30 hover:bg-black/60 text-white p-3 rounded-full transition-all duration-300 backdrop-blur-sm"
-              aria-label="Next slide"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
+            <div className="absolute top-6 right-6 z-20 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full text-white text-sm font-semibold">
+              {currentSlide + 1} / {saleBanners.length}
+            </div>
           )}
         </div>
       )}
