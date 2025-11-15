@@ -582,8 +582,10 @@ const HomePage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [saleBanners, setSaleBanners] = useState<SaleBanner[]>([]);
-  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     let mounted = true;
@@ -603,6 +605,15 @@ const HomePage: React.FC = () => {
     setSelectedCategory(params.get('category') ? parseInt(params.get('category') as string) : null);
   }, [location.search]);
 
+  // Carousel auto-rotation effect
+  useEffect(() => {
+    if (saleBanners.length === 0 || isHovered) return;
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % saleBanners.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [saleBanners.length, isHovered]);
+
   if (loading) return <p>Loading products...</p>;
 
   const filtered = products.filter(p => {
@@ -610,17 +621,6 @@ const HomePage: React.FC = () => {
     const matchesCategory = selectedCategory ? p.categoryId === selectedCategory : true;
     return matchesQuery && matchesCategory;
   });
-
-  const [currentSlide, setCurrentSlide] = React.useState(0);
-  const [isHovered, setIsHovered] = React.useState(false);
-
-  React.useEffect(() => {
-    if (saleBanners.length === 0 || isHovered) return;
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % saleBanners.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [saleBanners.length, isHovered]);
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
