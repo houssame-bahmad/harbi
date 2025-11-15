@@ -55,6 +55,9 @@ async function apiRequest(endpoint: string, options: RequestInit = {}) {
       console.log('   ❌ Request failed:', errorMessage);
       if (error.errors) {
         console.log('   ❌ Validation errors:', error.errors);
+        // Create detailed error message with all validation issues
+        const validationMessages = error.errors.map((e: any) => e.msg).join(', ');
+        throw new Error(`Validation failed: ${validationMessages}`);
       }
       throw new Error(errorMessage);
     }

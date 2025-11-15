@@ -1833,12 +1833,16 @@ const ProductForm: React.FC<{ product?: Product; onSave: (product: Product) => v
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (product) { // Editing
-            await api.updateProduct({ ...product, ...formData });
-            onSave({ ...product, ...formData });
-        } else { // Creating
-            const newProduct = await api.createProduct(formData);
-            onSave(newProduct);
+        try {
+            if (product) { // Editing
+                await api.updateProduct(product.id, formData);
+                onSave({ ...product, ...formData });
+            } else { // Creating
+                const newProduct = await api.createProduct(formData);
+                onSave(newProduct);
+            }
+        } catch (error: any) {
+            alert(error.message || 'Failed to save product. Please check all required fields.');
         }
     };
     
