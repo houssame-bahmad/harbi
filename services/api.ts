@@ -228,6 +228,41 @@ export const api = {
       method: 'DELETE',
     });
   },
+
+  // Media Upload
+  uploadMedia: async (file: File): Promise<string> => {
+    console.log('📤 UPLOADING media file:', file.name);
+    
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = async () => {
+        try {
+          const dataUrl = reader.result as string;
+          
+          const response = await apiRequest('/media/upload', {
+            method: 'POST',
+            body: JSON.stringify({
+              dataUrl: dataUrl,
+              filename: file.name,
+              originalName: file.name
+            }),
+          });
+
+          console.log('✅ Media uploaded:', response.url);
+          resolve(response.url);
+        } catch (error: any) {
+          reject(error);
+        }
+      };
+      
+      reader.onerror = () => {
+        reject(new Error('Failed to read file'));
+      };
+      
+      reader.readAsDataURL(file);
+    });
+  },
 };
 
 export default api;
