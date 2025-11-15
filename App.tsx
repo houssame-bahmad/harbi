@@ -258,18 +258,18 @@ const Navbar = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   const categories = [
-    { name: 'Visage', slug: 'visage' },
-    { name: 'Maquillage', slug: 'maquillage' },
-    { name: 'Corps', slug: 'corps' },
-    { name: 'Cheveux', slug: 'cheveux' },
-    { name: 'Bébé & Maman', slug: 'bebe-maman' },
-    { name: 'Homme', slug: 'homme' },
-    { name: 'Hygiène', slug: 'hygiene' },
-    { name: 'Solaire', slug: 'solaire' },
-    { name: 'Santé', slug: 'sante' },
-    { name: 'Para-médical', slug: 'para-medical' },
-    { name: 'Bio', slug: 'bio' },
-    { name: 'PROMOTION', slug: 'promotion' }
+    { id: 1, name: 'Visage', slug: 'visage' },
+    { id: 2, name: 'Maquillage', slug: 'maquillage' },
+    { id: 3, name: 'Corps', slug: 'corps' },
+    { id: 4, name: 'Cheveux', slug: 'cheveux' },
+    { id: 5, name: 'Bébé & Maman', slug: 'bebe-maman' },
+    { id: 6, name: 'Homme', slug: 'homme' },
+    { id: 7, name: 'Hygiène', slug: 'hygiene' },
+    { id: 8, name: 'Solaire', slug: 'solaire' },
+    { id: 9, name: 'Santé', slug: 'sante' },
+    { id: 10, name: 'Para-médical', slug: 'para-medical' },
+    { id: 11, name: 'Bio', slug: 'bio' },
+    { id: 12, name: 'PROMOTION', slug: 'promotion' }
   ];
 
   return (
@@ -1834,11 +1834,18 @@ const ProductForm: React.FC<{ product?: Product; onSave: (product: Product) => v
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            // Map categoryId to category name
+            const selectedCategory = categories.find(c => c.id === Number(formData.categoryId));
+            const productData = {
+                ...formData,
+                category: selectedCategory?.name || 'Visage'
+            };
+            
             if (product) { // Editing
-                await api.updateProduct(product.id, formData);
-                onSave({ ...product, ...formData });
+                await api.updateProduct(product.id, productData);
+                onSave({ ...product, ...productData });
             } else { // Creating
-                const newProduct = await api.createProduct(formData);
+                const newProduct = await api.createProduct(productData);
                 onSave(newProduct);
             }
         } catch (error: any) {

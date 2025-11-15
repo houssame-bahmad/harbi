@@ -113,10 +113,21 @@ export const api = {
     return apiRequest(`/products/${id}`);
   },
 
-  createProduct: async (product: Omit<Product, 'id'>): Promise<Product> => {
+  createProduct: async (product: any): Promise<Product> => {
+    // Backend expects: category (string), stock (number), inStock (boolean)
+    const backendProduct = {
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      category: product.category, // Should be category name string
+      imageUrl: product.imageUrl,
+      stock: product.stockQuantity || 0,
+      inStock: product.isActive ?? true
+    };
+    
     return apiRequest('/products', {
       method: 'POST',
-      body: JSON.stringify(product),
+      body: JSON.stringify(backendProduct),
     });
   },
 
