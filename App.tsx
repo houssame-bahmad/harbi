@@ -2281,8 +2281,9 @@ const BannerManagementPage: React.FC = () => {
       setIsLoading(true);
       const data = await api.getAllBannersAdmin();
       setBanners(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading banners:', error);
+      alert('Failed to load banners. Please ensure the sale_banners table exists in your database.');
     } finally {
       setIsLoading(false);
     }
@@ -2298,8 +2299,11 @@ const BannerManagementPage: React.FC = () => {
       }
       await loadBanners();
       handleCloseModal();
-    } catch (error) {
+      alert(editingBanner ? 'Banner updated successfully!' : 'Banner created successfully!');
+    } catch (error: any) {
       console.error('Error saving banner:', error);
+      const errorMsg = error?.message || 'Failed to save banner';
+      alert(`Error: ${errorMsg}\n\nPlease ensure:\n1. You are logged in as admin\n2. The sale_banners table exists in the database\n3. All required fields are filled`);
     }
   };
 
@@ -2321,12 +2325,16 @@ const BannerManagementPage: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('Are you sure you want to delete this banner?')) {
+    const confirmed = window.confirm('Are you sure you want to delete this banner? This action cannot be undone.');
+    if (confirmed) {
       try {
         await api.deleteBanner(id);
         await loadBanners();
-      } catch (error) {
+        alert('✅ Banner deleted successfully!');
+      } catch (error: any) {
         console.error('Error deleting banner:', error);
+        const errorMsg = error?.message || 'Failed to delete banner';
+        alert(`❌ Error: ${errorMsg}\n\nPlease ensure you are logged in as admin.`);
       }
     }
   };
@@ -2375,9 +2383,12 @@ const BannerManagementPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {banners.map(banner => (
           <div key={banner.id} className="relative group">
-            <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${banner.backgroundColor} shadow-xl transition-all duration-300`}>
+            <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${banner.backgroundColor} shadow-xl transition-all duration-300 group-hover:shadow-2xl`}>
               <div className="absolute inset-0 bg-black/10"></div>
-              <div className="relative p-8 text-white">
+              {banner.imageUrl && (
+                <img src={banner.imageUrl} alt={banner.title} className="absolute inset-0 w-full h-full object-cover opacity-30" />
+              )}
+              <div className="relative p-8 text-white min-h-[280px]">
                 {banner.subtitle && (
                   <div className="inline-block mb-3 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-bold uppercase tracking-wider">
                     {banner.subtitle}
@@ -2388,7 +2399,7 @@ const BannerManagementPage: React.FC = () => {
                   <p className="text-5xl font-black mb-2">{banner.discountText}</p>
                 )}
                 {banner.description && (
-                  <p className="text-lg mb-4 opacity-90">{banner.description}</p>
+                  <p className="text-lg mb-4 opacity-90 line-clamp-2">{banner.description}</p>
                 )}
                 <button className="px-6 py-3 bg-white text-gray-900 font-bold rounded-lg shadow-lg">
                   {banner.buttonText}
@@ -2401,30 +2412,41 @@ const BannerManagementPage: React.FC = () => {
               </div>
             </div>
             
-            {/* Action Buttons */}
-            <div className="absolute top-4 left-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            {/* Action Buttons - Always visible on mobile, hover on desktop */}
+            <div className="absolute top-4 left-4 flex gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10">
               <button
-                onClick={() => handleEdit(banner)}
-                className="p-2 bg-white rounded-lg shadow-lg hover:bg-gray-100"
-                title="Edit"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEdit(banner);
+                }}
+                className="p-3 bg-blue-600 hover:bg-blue-700 rounded-lg shadow-lg text-white transition-colors"
+                title="Edit Banner"
               >
-                <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
               </button>
               <button
-                onClick={() => handleDelete(banner.id)}
-                className="p-2 bg-white rounded-lg shadow-lg hover:bg-red-50"
-                title="Delete"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(banner.id);
+                }}
+                className="p-3 bg-red-600 hover:bg-red-700 rounded-lg shadow-lg text-white transition-colors"
+                title="Delete Banner"
               >
-                <svg className="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </button>
             </div>
             
-            <div className="mt-2 text-sm text-gray-600">
-              Order: {banner.displayOrder} | Status: {banner.isActive ? '✅ Active' : '❌ Inactive'}
+            <div className="mt-3 flex items-center justify-between px-2">
+              <span className="text-sm text-gray-600">
+                <span className="font-semibold">Order:</span> {banner.displayOrder}
+              </span>
+              <span className={`text-sm font-semibold ${banner.isActive ? 'text-green-600' : 'text-red-600'}`}>
+                {banner.isActive ? '✅ Active' : '❌ Inactive'}
+              </span>
             </div>
           </div>
         ))}
