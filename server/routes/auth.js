@@ -84,6 +84,79 @@ router.post('/login',
   }
 );
 
+// Register
+router.post('/register',
+  [
+    body('email').isEmail().normalizeEmail(),
+    body('password').isLength({ min: 8 }),
+    body('fullName').optional().trim(),
+    body('phoneNumber').optional().trim()
+  ],
+  async (req, res) => {
+    try {
+      // Validate request
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          error: { message: 'Invalid input', errors: errors.array() }
+        });
+      }
+
+      const { email, password, fullName, phoneNumber } = req.body;
+
+      // Check if user already exists
+      const [existingUsers] = await db.query(
+        'SELECT id FROM users WHERE email = ?',
+        [email]
+      );
+
+      if (existingUsers.length > 0) {
+        return res.status(409).json({
+          error: { message: 'User with this email already exists' }
+        });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create user
+      const [result] = await db.query(
+        'INSERT INTO users (email, password, full_name, phone, role) VALUES (?, ?, ?, ?, ?)',
+        [email, hashedPassword, fullName || '', phoneNumber || '', 'user']
+      );
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { 
+          id: result.insertId, 
+          email: email, 
+          role: 'user' 
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRATION || '7d' }
+      );
+
+      res.status(201).json({
+        user: {
+          id: result.insertId,
+          email: email,
+          role: 'user',
+          fullName: fullName || '',
+          phoneNumber: phoneNumber || '',
+          createdAt: new Date()
+        },
+        token
+      });
+
+    } catch (error) {
+      console.error('Registration error:', error);
+      res.status(500).json({
+        error: { message: 'Registration failed', status: 500 }
+      });
+    }
+  }
+);
+
 // Get current user
 router.get('/me', authMiddleware, async (req, res) => {
   try {
