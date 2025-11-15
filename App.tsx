@@ -611,40 +611,134 @@ const HomePage: React.FC = () => {
     return matchesQuery && matchesCategory;
   });
 
+  const [currentSlide, setCurrentSlide] = React.useState(0);
+  const [isHovered, setIsHovered] = React.useState(false);
+
+  React.useEffect(() => {
+    if (saleBanners.length === 0 || isHovered) return;
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % saleBanners.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [saleBanners.length, isHovered]);
+
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index);
+  };
+
+  const goToPrev = () => {
+    setCurrentSlide((prev) => (prev - 1 + saleBanners.length) % saleBanners.length);
+  };
+
+  const goToNext = () => {
+    setCurrentSlide((prev) => (prev + 1) % saleBanners.length);
+  };
+
   return (
     <div className="space-y-8">
-      {/* Promotional Banners - Sale Posters */}
+      {/* Bootstrap-style Carousel for Sale Banners */}
       {saleBanners.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {saleBanners.map((banner) => (
-            <div key={banner.id} className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${banner.backgroundColor} shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer`}>
-              <div className="absolute inset-0 bg-black/10"></div>
-              {banner.imageUrl && (
-                <img src={banner.imageUrl} alt={banner.title} className="absolute inset-0 w-full h-full object-cover opacity-30" />
-              )}
-              <div className="relative p-8 text-white">
-                {banner.subtitle && (
-                  <div className="inline-block mb-3 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-bold uppercase tracking-wider">
-                    {banner.subtitle}
+        <div 
+          className="relative w-full overflow-hidden rounded-lg shadow-xl"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          {/* Carousel Inner */}
+          <div className="relative h-[340px] md:h-[400px] lg:h-[500px]">
+            {saleBanners.map((banner, index) => (
+              <div
+                key={banner.id}
+                className={`absolute inset-0 w-full h-full transition-opacity duration-700 ${
+                  index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                }`}
+              >
+                <a href={banner.buttonLink !== '#' ? banner.buttonLink : undefined} className="block w-full h-full">
+                  <div className={`relative w-full h-full bg-gradient-to-br ${banner.backgroundColor}`}>
+                    {banner.imageUrl && (
+                      <img 
+                        src={banner.imageUrl} 
+                        alt={banner.title} 
+                        className="absolute inset-0 w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60"></div>
+                    
+                    {/* Banner Content - Optional overlay text */}
+                    {(banner.title || banner.subtitle || banner.discountText) && (
+                      <div className="absolute inset-0 flex items-center justify-center text-center text-white p-8">
+                        <div className="max-w-2xl">
+                          {banner.subtitle && (
+                            <div className="inline-block mb-3 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-bold uppercase tracking-wider">
+                              {banner.subtitle}
+                            </div>
+                          )}
+                          {banner.title && (
+                            <h2 className="text-3xl md:text-5xl font-bold mb-3 drop-shadow-lg">{banner.title}</h2>
+                          )}
+                          {banner.discountText && (
+                            <p className="text-5xl md:text-7xl font-black mb-3 text-yellow-400 drop-shadow-lg">{banner.discountText}</p>
+                          )}
+                          {banner.description && (
+                            <p className="text-lg md:text-xl mb-4 opacity-90 drop-shadow-md">{banner.description}</p>
+                          )}
+                          {banner.buttonText && (
+                            <button className="mt-4 px-8 py-3 bg-white text-gray-900 font-bold rounded-lg hover:bg-yellow-400 transition-colors shadow-lg transform hover:scale-105">
+                              {banner.buttonText}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-                <h2 className="text-4xl font-bold mb-2">{banner.title}</h2>
-                {banner.discountText && (
-                  <p className="text-6xl font-black mb-2">{banner.discountText}</p>
-                )}
-                {banner.description && (
-                  <p className="text-lg mb-4 opacity-90">{banner.description}</p>
-                )}
-                <button 
-                  onClick={() => banner.buttonLink !== '#' && (window.location.href = banner.buttonLink)}
-                  className="px-6 py-3 bg-white text-gray-900 font-bold rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
-                >
-                  {banner.buttonText}
-                </button>
+                </a>
               </div>
-              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+            ))}
+          </div>
+
+          {/* Carousel Indicators */}
+          {saleBanners.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+              {saleBanners.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToSlide(index)}
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    index === currentSlide 
+                      ? 'bg-white w-8' 
+                      : 'bg-white/50 hover:bg-white/80'
+                  }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
             </div>
-          ))}
+          )}
+
+          {/* Previous Button */}
+          {saleBanners.length > 1 && (
+            <button
+              onClick={goToPrev}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/30 hover:bg-black/60 text-white p-3 rounded-full transition-all duration-300 backdrop-blur-sm"
+              aria-label="Previous slide"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
+          {/* Next Button */}
+          {saleBanners.length > 1 && (
+            <button
+              onClick={goToNext}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/30 hover:bg-black/60 text-white p-3 rounded-full transition-all duration-300 backdrop-blur-sm"
+              aria-label="Next slide"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
         </div>
       )}
 
