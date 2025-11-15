@@ -73,6 +73,10 @@ const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   };
 
   const logout = () => {
+    // Clear user-specific cart on logout
+    if (user) {
+      localStorage.removeItem(`cart_user_${user.id}`);
+    }
     setUser(null);
     localStorage.removeItem('user');
   };
@@ -102,14 +106,31 @@ const useCart = () => {
 };
 
 const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
+  
+  // Get cart key based on user ID (user-specific cart)
+  const getCartKey = () => {
+    return user ? `cart_user_${user.id}` : 'cart_guest';
+  };
+
   const [cart, setCart] = useState<CartItem[]>(() => {
-    const savedCart = localStorage.getItem('cart');
+    const cartKey = user ? `cart_user_${user.id}` : 'cart_guest';
+    const savedCart = localStorage.getItem(cartKey);
     return savedCart ? JSON.parse(savedCart) : [];
   });
 
+  // Save cart to localStorage whenever it changes or user changes
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
-  }, [cart]);
+    const cartKey = getCartKey();
+    localStorage.setItem(cartKey, JSON.stringify(cart));
+  }, [cart, user]);
+
+  // Load user-specific cart when user logs in/out
+  useEffect(() => {
+    const cartKey = getCartKey();
+    const savedCart = localStorage.getItem(cartKey);
+    setCart(savedCart ? JSON.parse(savedCart) : []);
+  }, [user?.id]);
 
   const addToCart = (product: Product) => {
     setCart(prevCart => {
@@ -159,135 +180,199 @@ const Navbar = () => {
   const { cartCount } = useCart();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+
+  const categories = [
+    { name: 'Visage', slug: 'visage' },
+    { name: 'Maquillage', slug: 'maquillage' },
+    { name: 'Corps', slug: 'corps' },
+    { name: 'Cheveux', slug: 'cheveux' },
+    { name: 'Bébé & Maman', slug: 'bebe-maman' },
+    { name: 'Homme', slug: 'homme' },
+    { name: 'Hygiène', slug: 'hygiene' },
+    { name: 'Solaire', slug: 'solaire' },
+    { name: 'Santé', slug: 'sante' },
+    { name: 'Para-médical', slug: 'para-medical' },
+    { name: 'Bio', slug: 'bio' },
+    { name: 'PROMOTION', slug: 'promotion' }
+  ];
 
   return (
-    <nav className="bg-white shadow-lg sticky top-0 z-50 border-b border-gray-100">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col lg:flex-row justify-between items-center py-4 gap-4">
-          {/* Logo Section */}
-          <div className="flex items-center space-x-3 w-full lg:w-auto justify-between lg:justify-start">
-            <Link to="/" className="text-2xl font-bold text-primary flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-md">
-                <path d="M12 2L4 5V11.09C4 16.14 7.41 20.85 12 22C16.59 20.85 20 16.14 20 11.09V5L12 2Z" fill="currentColor" opacity="0.2"/>
-                <path d="M12 2L4 5V11.09C4 16.14 7.41 20.85 12 22C16.59 20.85 20 16.14 20 11.09V5L12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M9 12L11 14L15 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <div className="flex flex-col">
-                <span className="gradient-text text-xl leading-tight">Parapharmacie</span>
-                <span className="hidden sm:block text-[10px] text-gray-500 font-normal -mt-1">Professional Healthcare</span>
-              </div>
-            </Link>
+    <nav className="bg-white sticky top-0 z-50">
+      {/* Top Banner */}
+      <div className="bg-[#ec4249] text-white py-2">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center text-sm">
+            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+              <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z"/>
+            </svg>
+            <span className="font-medium">Livraison gratuite pour toute commande sur Casablanca</span>
           </div>
+        </div>
+      </div>
 
-          {/* Search Bar */}
-          <div className="flex items-center gap-3 w-full lg:w-2/5 xl:w-1/3">
-            <form onSubmit={(e) => { e.preventDefault(); navigate(`/?q=${encodeURIComponent(query)}`); }} className="flex flex-1">
-              <div className="relative flex-1">
-                <input 
-                  value={query} 
-                  onChange={(e) => setQuery(e.target.value)} 
-                  placeholder="Search products, vitamins..." 
-                  className="w-full px-4 py-2.5 rounded-l-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all" 
-                />
-              </div>
-              <Button type="submit" size="md" className="rounded-l-none rounded-r-lg bg-primary hover:bg-primary-focus px-4">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* Main Header */}
+      <div className="border-b border-gray-100 shadow-sm">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col lg:flex-row justify-between items-center py-4 gap-4">
+            {/* Logo Section */}
+            <div className="flex items-center space-x-3 w-full lg:w-auto justify-between lg:justify-start">
+              <Link to="/" className="text-2xl font-bold flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-md">
+                  <path d="M12 2L4 5V11.09C4 16.14 7.41 20.85 12 22C16.59 20.85 20 16.14 20 11.09V5L12 2Z" fill="#ec4249" opacity="0.2"/>
+                  <path d="M12 2L4 5V11.09C4 16.14 7.41 20.85 12 22C16.59 20.85 20 16.14 20 11.09V5L12 2Z" stroke="#ec4249" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M9 12L11 14L15 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-              </Button>
-            </form>
-          </div>
-
-          {/* Navigation Links */}
-          <div className="flex items-center space-x-2 lg:space-x-4 w-full lg:w-auto justify-center lg:justify-end">
-            {user ? (
-              <>
-                {/* User Greeting */}
-                <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg border border-primary/10">
-                  <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  <span className="text-sm font-medium text-gray-700">
-                    {user.fullName && user.fullName.trim() ? user.fullName.split(' ')[0] : (user.email ? user.email.split('@')[0] : 'User')}
-                  </span>
+                <div className="flex flex-col">
+                  <span className="text-xl leading-tight" style={{ color: '#ec4249' }}>Parapharmacie</span>
+                  <span className="hidden sm:block text-[10px] text-gray-500 font-normal -mt-1">Santé & Bien-être</span>
                 </div>
-                
-                {/* Role-based Navigation */}
-                {user.role === UserRole.ADMIN && (
-                  <>
-                    <Link to="/admin" className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+              </Link>
+            </div>
+
+            {/* Search Bar */}
+            <div className="flex items-center gap-3 w-full lg:w-2/5 xl:w-1/3">
+              <form onSubmit={(e) => { e.preventDefault(); navigate(`/?q=${encodeURIComponent(query)}`); }} className="flex flex-1">
+                <div className="relative flex-1">
+                  <input 
+                    value={query} 
+                    onChange={(e) => setQuery(e.target.value)} 
+                    placeholder="Rechercher un produit, une marque..." 
+                    className="w-full px-4 py-2.5 rounded-l-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#ec4249]/30 focus:border-[#ec4249] transition-all" 
+                  />
+                </div>
+                <Button type="submit" size="md" className="rounded-l-none rounded-r-lg px-4" style={{ backgroundColor: '#ec4249' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </Button>
+              </form>
+            </div>
+
+            {/* Right Section - WhatsApp, Social, Cart, User */}
+            <div className="flex items-center space-x-2 lg:space-x-4 w-full lg:w-auto justify-center lg:justify-end">
+              {/* WhatsApp Contact */}
+              <a href="https://wa.me/212632478888" target="_blank" rel="noopener noreferrer" className="hidden md:flex items-center gap-2 px-3 py-2 bg-green-50 hover:bg-green-100 rounded-lg transition-all">
+                <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+                <span className="text-sm font-medium text-gray-700">+(212) 632 478 888</span>
+              </a>
+
+              {/* Social Media Icons */}
+              <div className="hidden md:flex items-center gap-2">
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="p-2 hover:bg-gray-100 rounded-full transition-all" title="Facebook">
+                  <svg className="w-5 h-5" style={{ color: '#1877f2' }} fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                </a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="p-2 hover:bg-gray-100 rounded-full transition-all" title="Instagram">
+                  <svg className="w-5 h-5" style={{ color: '#E4405F' }} fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                  </svg>
+                </a>
+              </div>
+
+              {user ? (
+                <>
+                  {/* User Greeting */}
+                  <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
+                    <svg className="w-5 h-5" style={{ color: '#ec4249' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <span className="text-sm font-medium text-gray-700">
+                      {user.fullName && user.fullName.trim() ? user.fullName.split(' ')[0] : (user.email ? user.email.split('@')[0] : 'User')}
+                    </span>
+                  </div>
+                  
+                  {/* Role-based Navigation - Simplified for parapharma style */}
+                  {user.role === UserRole.ADMIN && (
+                    <Link to="/admin" className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-[#ec4249] rounded-lg transition-all">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                       </svg>
                       <span className="hidden lg:inline">Admin</span>
                     </Link>
-                    <Link to="/products" className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                      </svg>
-                      <span className="hidden lg:inline">Products</span>
-                    </Link>
-                    <Link to="/admin/banners" className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                      </svg>
-                      <span className="hidden lg:inline">Banners</span>
-                    </Link>
-                  </>
-                )}
-                
-                {user.role === UserRole.DELIVERY && (
-                  <Link to="/delivery" className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
-                    </svg>
-                    <span className="hidden lg:inline">Deliveries</span>
-                  </Link>
-                )}
-                
-                {user.role === UserRole.USER && (
-                  <Link to="/orders" className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                    <span className="hidden lg:inline">Orders</span>
-                  </Link>
-                )}
-                
-                {/* Cart Button */}
-                <button 
-                  onClick={() => navigate('/cart')} 
-                  className="relative flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-secondary text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-md animate-pulse">
-                      {cartCount}
-                    </span>
                   )}
+                  
+                  {user.role === UserRole.USER && (
+                    <Link to="/orders" className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-[#ec4249] rounded-lg transition-all">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                      <span className="hidden lg:inline">Commandes</span>
+                    </Link>
+                  )}
+                  
+                  {/* Cart Button */}
+                  <button 
+                    onClick={() => navigate('/cart')} 
+                    className="relative flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-[#ec4249] hover:bg-gray-50 rounded-lg transition-all"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span className="hidden md:inline">Panier</span>
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-md" style={{ backgroundColor: '#ec4249' }}>
+                        {cartCount}
+                      </span>
+                    )}
+                  </button>
+                  
+                  {/* Logout Button */}
+                  <button 
+                    onClick={logout} 
+                    className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 hover:text-[#ec4249] hover:bg-gray-50 rounded-lg transition-all"
+                    title="Déconnexion"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                  </button>
+                </>
+              ) : (
+                <Button onClick={() => navigate('/login')} className="px-6" style={{ backgroundColor: '#ec4249' }}>
+                  <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                  </svg>
+                  Connexion
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mega Menu */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center gap-1 overflow-x-auto">
+            {categories.map((category) => (
+              <div
+                key={category.slug}
+                className="relative group"
+                onMouseEnter={() => setActiveCategory(category.slug)}
+                onMouseLeave={() => setActiveCategory(null)}
+              >
+                <button
+                  onClick={() => navigate(`/?category=${category.slug}`)}
+                  className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-all ${
+                    category.name === 'PROMOTION' 
+                      ? 'text-[#ec4249] font-bold'
+                      : 'text-gray-700 hover:text-[#ec4249]'
+                  }`}
+                >
+                  {category.name}
                 </button>
                 
-                {/* Logout Button */}
-                <button 
-                  onClick={logout} 
-                  className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
-                  title="Logout"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                </button>
-              </>
-            ) : (
-              <Button onClick={() => navigate('/login')} className="px-6">
-                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                </svg>
-                Login
-              </Button>
-            )}
+                {/* Underline effect */}
+                <div className={`absolute bottom-0 left-0 right-0 h-0.5 bg-[#ec4249] transform origin-center transition-transform ${
+                  activeCategory === category.slug ? 'scale-x-100' : 'scale-x-0'
+                }`}></div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -302,64 +387,115 @@ const Layout: React.FC = () => {
       <main className="flex-grow container mx-auto p-4 md:p-6 lg:p-8">
         <Outlet />
       </main>
-      <footer className="bg-gradient-to-r from-neutral to-neutral-focus text-white py-12 border-t-4 border-primary">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            {/* Brand */}
+      <footer className="bg-white border-t border-gray-200">
+        {/* Service Client Top Section */}
+        <div className="bg-gray-50 py-6">
+          <div className="container mx-auto px-4">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <svg className="w-8 h-8" style={{ color: '#ec4249' }} fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
+                </svg>
+                <div>
+                  <h3 className="font-bold text-gray-900">Service Client</h3>
+                  <p className="text-sm text-gray-600">+(212) 632 478 888</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <svg className="w-8 h-8" style={{ color: '#ec4249' }} fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                </svg>
+                <div>
+                  <h3 className="font-bold text-gray-900">Email</h3>
+                  <p className="text-sm text-gray-600">contact@parapharmacie.ma</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Footer */}
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
+            {/* Nos Produits */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-4">Nos Produits</h3>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li><a href="/?category=promotion" className="hover:text-[#ec4249] transition-colors">Promotions</a></li>
+                <li><a href="/?new=true" className="hover:text-[#ec4249] transition-colors">Nouveaux produits</a></li>
+                <li><a href="/?bestsellers=true" className="hover:text-[#ec4249] transition-colors">Meilleures ventes</a></li>
+              </ul>
+            </div>
+            
+            {/* Infos Pratiques */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-4">Infos Pratiques</h3>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li><a href="/livraison" className="hover:text-[#ec4249] transition-colors">Livraison</a></li>
+                <li><a href="/mentions-legales" className="hover:text-[#ec4249] transition-colors">Mentions légales</a></li>
+                <li><a href="/conditions" className="hover:text-[#ec4249] transition-colors">Conditions d'utilisation</a></li>
+                <li><a href="/about" className="hover:text-[#ec4249] transition-colors">Qui sommes nous</a></li>
+                <li><a href="/paiement" className="hover:text-[#ec4249] transition-colors">Paiement sécurisé</a></li>
+              </ul>
+            </div>
+            
+            {/* Nous Connaitre */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-4">Nous Connaitre</h3>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li><Link to="/contact" className="hover:text-[#ec4249] transition-colors">Contactez-nous</Link></li>
+              </ul>
+            </div>
+            
+            {/* Votre Compte */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-4">Votre Compte</h3>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li><Link to="/login" className="hover:text-[#ec4249] transition-colors">Informations personnelles</Link></li>
+                <li><Link to="/orders" className="hover:text-[#ec4249] transition-colors">Commandes</Link></li>
+                <li><Link to="/cart" className="hover:text-[#ec4249] transition-colors">Panier</Link></li>
+              </ul>
+            </div>
+            
+            {/* Social & Logo */}
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2L4 5V11.09C4 16.14 7.41 20.85 12 22C16.59 20.85 20 16.14 20 11.09V5L12 2Z" fill="currentColor" opacity="0.3"/>
-                  <path d="M9 12L11 14L15 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12 2L4 5V11.09C4 16.14 7.41 20.85 12 22C16.59 20.85 20 16.14 20 11.09V5L12 2Z" fill="#ec4249" opacity="0.3"/>
+                  <path d="M9 12L11 14L15 10" stroke="#ec4249" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span className="text-xl font-bold">Parapharmacie</span>
+                <span className="text-xl font-bold" style={{ color: '#ec4249' }}>Parapharmacie</span>
               </div>
-              <p className="text-sm text-gray-400">Your trusted source for healthcare and wellness products.</p>
-            </div>
-            
-            {/* Quick Links */}
-            <div className="footer-links">
-              <h3 className="font-semibold mb-3 text-accent">Quick Links</h3>
-              <ul className="space-y-2 text-sm">
-                <li><Link to="/" className="hover:text-accent transition-colors">Home</Link></li>
-                <li><Link to="/cart" className="hover:text-accent transition-colors">Shopping Cart</Link></li>
-                <li><Link to="/orders" className="hover:text-accent transition-colors">My Orders</Link></li>
-              </ul>
-            </div>
-            
-            {/* Categories */}
-            <div className="footer-links">
-              <h3 className="font-semibold mb-3 text-accent">Categories</h3>
-              <ul className="space-y-2 text-sm">
-                <li><a href="/?category=Skincare" className="hover:text-accent transition-colors">Skincare</a></li>
-                <li><a href="/?category=Vitamins" className="hover:text-accent transition-colors">Vitamins & Supplements</a></li>
-                <li><a href="/?category=First Aid" className="hover:text-accent transition-colors">First Aid</a></li>
-                <li><a href="/?category=Personal Care" className="hover:text-accent transition-colors">Personal Care</a></li>
-              </ul>
-            </div>
-            
-            {/* Contact */}
-            <div>
-              <h3 className="font-semibold mb-3 text-accent">Contact Us</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li className="flex items-center gap-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 8L10.89 13.26C11.21 13.47 11.63 13.47 11.95 13.26L20 8M5 19H19C20.1046 19 21 18.1046 21 17V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V17C3 18.1046 3.89543 19 5 19Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <h3 className="font-bold text-gray-900 mb-3">Suivez-nous</h3>
+              <div className="flex gap-3">
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 hover:bg-[#ec4249] hover:text-white flex items-center justify-center transition-all">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                   </svg>
-                  info@parapharmacie.com
-                </li>
-                <li className="flex items-center gap-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 5C3 3.89543 3.89543 3 5 3H8.27924C8.70967 3 9.09181 3.27543 9.22792 3.68377L10.7257 8.17721C10.8831 8.64932 10.6694 9.16531 10.2243 9.38787L7.96701 10.5165C9.06925 12.9612 11.0388 14.9308 13.4835 16.033L14.6121 13.7757C14.8347 13.3306 15.3507 13.1169 15.8228 13.2743L20.3162 14.7721C20.7246 14.9082 21 15.2903 21 15.7208V19C21 20.1046 20.1046 21 19 21H18C9.71573 21 3 14.2843 3 6V5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 hover:bg-[#ec4249] hover:text-white flex items-center justify-center transition-all">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                   </svg>
-                  +1 (555) 123-4567
-                </li>
-              </ul>
+                </a>
+              </div>
             </div>
           </div>
           
-          <div className="border-t border-gray-700 pt-6 text-center text-sm text-gray-400">
-            <p>&copy; {new Date().getFullYear()} Parapharmacie Store. All rights reserved. | Professional Healthcare Solutions</p>
+          {/* Bottom Section */}
+          <div className="border-t border-gray-200 pt-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <p className="text-sm text-gray-600">&copy; {new Date().getFullYear()} Parapharmacie.ma - Tous droits réservés</p>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-600">Paiement sécurisé par:</span>
+                <div className="flex gap-2">
+                  <div className="w-12 h-8 bg-gray-100 rounded flex items-center justify-center text-xs font-bold text-gray-600">VISA</div>
+                  <div className="w-12 h-8 bg-gray-100 rounded flex items-center justify-center text-xs font-bold text-gray-600">MC</div>
+                  <div className="w-12 h-8 bg-gray-100 rounded flex items-center justify-center text-xs font-bold text-gray-600">CMI</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </footer>
@@ -423,10 +559,19 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
       }
   };
 
+  const discountPercent = product.originalPrice && product.originalPrice > product.price 
+    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    : 0;
+
   return (
     <>
       <Card className="flex flex-col h-full product-card group">
-        <Link to={`/product/${product.id}`} className="block overflow-hidden">
+        <Link to={`/product/${product.id}`} className="block overflow-hidden relative">
+          {discountPercent > 0 && (
+            <div className="absolute top-2 left-2 z-10 bg-[#ec4249] text-white text-xs font-bold px-2 py-1 rounded-md">
+              -{discountPercent}%
+            </div>
+          )}
           <div className="aspect-square overflow-hidden bg-gray-50">
             <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" src={product.imageUrl} alt={product.name} />
           </div>
@@ -440,32 +585,33 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
           <div className="mt-auto">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-primary">{formatPrice(product.price)}</span>
+                <span className="text-2xl font-bold" style={{ color: '#ec4249' }}>{formatPrice(product.price)}</span>
               </div>
               <div className="text-xs text-gray-500">
                 {product.stockQuantity > 0 ? (
                   <span className="flex items-center gap-1">
                     <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                    In Stock
+                    En stock
                   </span>
                 ) : (
-                  <span className="text-red-500">Out of Stock</span>
+                  <span className="text-red-500">Rupture de stock</span>
                 )}
               </div>
             </div>
             
             <div className="flex gap-2">
-              <Button onClick={() => setIsModalOpen(true)} variant="ghost" size="sm" className="flex-1">
+              <Button onClick={() => setIsModalOpen(true)} variant="ghost" size="sm" className="flex-1 text-gray-700 hover:text-[#ec4249]">
                 <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
-                Details
+                Voir
               </Button>
-              <Button onClick={handleAddToCart} variant='secondary' size='sm' className="flex-1" disabled={product.stockQuantity <= 0}>
+              <Button onClick={handleAddToCart} size='sm' className="flex-1" style={{ backgroundColor: '#ec4249' }} disabled={product.stockQuantity <= 0}>
                 <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                Add
+                J'achète !
               </Button>
             </div>
           </div>
@@ -634,19 +780,57 @@ const HomePage: React.FC = () => {
     setCurrentSlide((prev) => (prev + 1) % saleBanners.length);
   };
 
+  const getCategoryIcon = (categoryName: string) => {
+    const iconClass = "w-8 h-8";
+    switch(categoryName.toLowerCase()) {
+      case 'skincare':
+        return (
+          <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        );
+      case 'vitamins':
+        return (
+          <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+          </svg>
+        );
+      case 'first aid':
+        return (
+          <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+        );
+      case 'personal care':
+        return (
+          <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        );
+      default:
+        return (
+          <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+          </svg>
+        );
+    }
+  };
+
   return (
     <div className="space-y-8">
-      {/* Modern Hero Carousel */}
+      {/* Hero Section - 75/25 Layout */}
       {saleBanners.length > 0 && (
-        <div 
-          className="relative w-full overflow-hidden rounded-2xl"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        >
-          {/* Carousel Inner */}
-          <div className="relative h-[400px] md:h-[500px] lg:h-[600px]">
-            {saleBanners.map((banner, index) => (
-              <div
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* Left: Main Carousel (75%) */}
+          <div 
+            className="w-full lg:w-3/4 relative overflow-hidden rounded-2xl"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            {/* Carousel Inner */}
+            <div className="relative h-[300px] md:h-[400px] lg:h-[450px]">
+              {saleBanners.map((banner, index) => (
+                <div
                 key={banner.id}
                 className={`absolute inset-0 w-full h-full transition-all duration-1000 ease-in-out ${
                   index === currentSlide 
@@ -779,48 +963,155 @@ const HomePage: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Right: Promotional Banners (25%) */}
+        <div className="w-full lg:w-1/4 flex flex-col gap-4">
+            {/* Top Promo Banner */}
+            <div className="relative h-[145px] lg:h-[218px] rounded-2xl overflow-hidden group cursor-pointer">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#ec4249] to-red-600"></div>
+              <div className="relative h-full flex flex-col items-center justify-center p-6 text-white text-center">
+                <svg className="w-12 h-12 mb-2 opacity-90" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                  <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd"/>
+                </svg>
+                <h3 className="text-lg font-bold mb-1">Nouveaux Produits</h3>
+                <p className="text-sm opacity-90">Découvrez nos dernières arrivées</p>
+              </div>
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300"></div>
+            </div>
+
+            {/* Bottom Promo Banner */}
+            <div className="relative h-[145px] lg:h-[218px] rounded-2xl overflow-hidden group cursor-pointer">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#3cabdb] to-blue-600"></div>
+              <div className="relative h-full flex flex-col items-center justify-center p-6 text-white text-center">
+                <svg className="w-12 h-12 mb-2 opacity-90" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                </svg>
+                <h3 className="text-lg font-bold mb-1">Santé & Bien-être</h3>
+                <p className="text-sm opacity-90">Des produits pour toute la famille</p>
+              </div>
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300"></div>
+            </div>
+          </div>
+        </div>
       )}
 
-      <div className="mb-8">
-        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Browse by Category</h3>
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+      {/* Reassurance Block */}
+      <div className="bg-gray-50 rounded-2xl p-6 md:p-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Paiement sécurisé */}
+          <div className="flex flex-col items-center text-center">
+            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mb-3 shadow-md" style={{ color: '#ec4249' }}>
+              <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/>
+                <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd"/>
+              </svg>
+            </div>
+            <h4 className="font-semibold text-gray-900 mb-1">Paiement sécurisé</h4>
+            <p className="text-sm text-gray-600">100% sécurisé</p>
+          </div>
+
+          {/* Livraison offerte */}
+          <div className="flex flex-col items-center text-center">
+            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mb-3 shadow-md" style={{ color: '#ec4249' }}>
+              <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z"/>
+              </svg>
+            </div>
+            <h4 className="font-semibold text-gray-900 mb-1">Livraison offerte</h4>
+            <p className="text-sm text-gray-600">Dès 300 DH</p>
+          </div>
+
+          {/* Produits certifiés */}
+          <div className="flex flex-col items-center text-center">
+            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mb-3 shadow-md" style={{ color: '#ec4249' }}>
+              <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+              </svg>
+            </div>
+            <h4 className="font-semibold text-gray-900 mb-1">Produits certifiés</h4>
+            <p className="text-sm text-gray-600">Qualité garantie</p>
+          </div>
+
+          {/* Confidentialité */}
+          <div className="flex flex-col items-center text-center">
+            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mb-3 shadow-md" style={{ color: '#ec4249' }}>
+              <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+              </svg>
+            </div>
+            <h4 className="font-semibold text-gray-900 mb-1">Confidentialité</h4>
+            <p className="text-sm text-gray-600">Données protégées</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Category Section - Circular Thumbnails */}
+      {/* Category Section - Circular Thumbnails */}
+      <div className="mb-10">
+        <h3 className="text-2xl font-bold text-gray-900 mb-6">Explorer les catégories</h3>
+        <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-hide">
           <button 
             onClick={() => setSelectedCategory(null)} 
-            className={`category-pill ${selectedCategory === null ? 'active' : ''}`}
+            className="flex-shrink-0 flex flex-col items-center group"
           >
-            All Products
+            <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-2 transition-all ${
+              selectedCategory === null 
+                ? 'bg-[#ec4249] text-white shadow-lg scale-105' 
+                : 'bg-gray-100 text-gray-700 group-hover:bg-gray-200'
+            }`}>
+              <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            </div>
+            <span className={`text-xs font-medium ${
+              selectedCategory === null ? 'text-white' : 'text-gray-700 group-hover:text-[#ec4249]'
+            }`}>
+              Tous
+            </span>
           </button>
           {categories.map(c => (
             <button 
               key={c.id} 
-              onClick={() => setSelectedCategory(c.id)} 
-              className={`category-pill whitespace-nowrap ${selectedCategory === c.id ? 'active' : ''}`}
+              onClick={() => setSelectedCategory(c.id)}
+              className="flex-shrink-0 flex flex-col items-center group"
             >
-              {c.name}
+              <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-2 transition-all ${
+                selectedCategory === c.id 
+                  ? 'bg-[#ec4249] text-white shadow-lg scale-105' 
+                  : 'bg-gray-100 text-gray-700 group-hover:bg-gray-200'
+              }`}>
+                {getCategoryIcon(c.name)}
+              </div>
+              <span className={`text-xs font-medium text-center max-w-[100px] ${
+                selectedCategory === c.id ? 'text-[#ec4249]' : 'text-gray-700 group-hover:text-[#ec4249]'
+              }`}>{c.name}</span>
             </button>
           ))}
         </div>
       </div>
 
+      {/* Tabbed Product Sections */}
       <div>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-3xl font-bold text-gray-900">
             {selectedCategory 
-              ? categories.find(c => c.id === selectedCategory)?.name || 'Products'
-              : 'All Products'}
+              ? categories.find(c => c.id === selectedCategory)?.name || 'Produits'
+              : 'Nos Produits'}
           </h2>
           <div className="text-sm text-gray-500">
-            {filtered.length} {filtered.length === 1 ? 'product' : 'products'}
+            {filtered.length} {filtered.length === 1 ? 'produit' : 'produits'}
           </div>
         </div>
         
         {filtered.length === 0 ? (
           <div className="empty-state py-16">
-            <svg className="mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="mx-auto mb-4 w-16 h-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <p className="text-xl font-semibold text-gray-400 mb-2">No products found</p>
-            <p className="text-gray-500">Try adjusting your search or filters</p>
+            <p className="text-xl font-semibold text-gray-400 mb-2">Aucun produit trouvé</p>
+            <p className="text-gray-500">Essayez d'ajuster vos filtres de recherche</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -829,6 +1120,37 @@ const HomePage: React.FC = () => {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Brand Showcase */}
+      <div className="bg-gray-50 rounded-2xl p-8">
+        <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Nos prestigieuses marques</h3>
+        <div className="flex items-center justify-center gap-8 flex-wrap">
+          {['AVÈNE', 'EUCERIN', 'NUXE', 'FILORGA', 'CAUDALIE', 'LA ROCHE-POSAY'].map((brand) => (
+            <div key={brand} className="flex items-center justify-center w-32 h-20 bg-white rounded-lg shadow-sm hover:shadow-md transition-all group cursor-pointer">
+              <span className="text-lg font-bold text-gray-400 group-hover:text-[#ec4249] transition-colors">{brand}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Newsletter */}
+      <div className="bg-gradient-to-r from-[#ec4249] to-red-600 rounded-2xl p-8 md:p-12 text-white text-center">
+        <h3 className="text-3xl font-bold mb-3">Recevez nos offres spéciales</h3>
+        <p className="text-lg mb-6 opacity-90">Inscrivez-vous à notre newsletter et profitez de promotions exclusives</p>
+        <form className="max-w-md mx-auto flex gap-3">
+          <input 
+            type="email" 
+            placeholder="Votre adresse e-mail" 
+            className="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-white"
+          />
+          <button 
+            type="submit" 
+            className="px-6 py-3 bg-white text-[#ec4249] font-bold rounded-lg hover:bg-gray-100 transition-all"
+          >
+            S'abonner
+          </button>
+        </form>
       </div>
     </div>
   );
