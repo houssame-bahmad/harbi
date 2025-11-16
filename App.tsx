@@ -1113,51 +1113,6 @@ const HomePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Category Section - Circular Thumbnails */}
-      {/* Category Section - Circular Thumbnails */}
-      <div className="mb-10">
-        <h3 className="text-2xl font-bold text-gray-900 mb-6">Explorer les catégories</h3>
-        <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-hide">
-          <button 
-            onClick={() => setSelectedCategory(null)} 
-            className="flex-shrink-0 flex flex-col items-center group"
-          >
-            <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-2 transition-all ${
-              selectedCategory === null 
-                ? 'bg-[#2563eb] text-white shadow-lg scale-105' 
-                : 'bg-gray-100 text-gray-700 group-hover:bg-gray-200'
-            }`}>
-              <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-              </svg>
-            </div>
-            <span className={`text-xs font-medium ${
-              selectedCategory === null ? 'text-white' : 'text-gray-700 group-hover:text-[#2563eb]'
-            }`}>
-              Tous
-            </span>
-          </button>
-          {categories.map(c => (
-            <button 
-              key={c.id} 
-              onClick={() => setSelectedCategory(c.id)}
-              className="flex-shrink-0 flex flex-col items-center group"
-            >
-              <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-2 transition-all ${
-                selectedCategory === c.id 
-                  ? 'bg-[#2563eb] text-white shadow-lg scale-105' 
-                  : 'bg-gray-100 text-gray-700 group-hover:bg-gray-200'
-              }`}>
-                {getCategoryIcon(c.name)}
-              </div>
-              <span className={`text-xs font-medium text-center max-w-[100px] ${
-                selectedCategory === c.id ? 'text-[#2563eb]' : 'text-gray-700 group-hover:text-[#2563eb]'
-              }`}>{c.name}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Tabbed Product Sections */}
       <div>
         <div className="flex items-center justify-between mb-6">
