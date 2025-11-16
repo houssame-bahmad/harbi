@@ -4,6 +4,25 @@ const { body, validationResult } = require('express-validator');
 const db = require('../config/database');
 const { authMiddleware, adminOnly } = require('../middleware/auth');
 
+// Category name to ID mapping
+const getCategoryId = (categoryName) => {
+  const categoryMap = {
+    'Visage': 1,
+    'Maquillage': 2,
+    'Corps': 3,
+    'Cheveux': 4,
+    'Bébé & Maman': 5,
+    'Homme': 6,
+    'Hygiène': 7,
+    'Solaire': 8,
+    'Santé': 9,
+    'Para-médical': 10,
+    'Bio': 11,
+    'PROMOTION': 12
+  };
+  return categoryMap[categoryName] || 1; // Default to 1 if not found
+};
+
 // Get all products (public)
 router.get('/', async (req, res) => {
   try {
@@ -14,7 +33,7 @@ router.get('/', async (req, res) => {
     // Convert to match frontend Product interface
     const formattedProducts = products.map(product => ({
       id: parseInt(product.id),
-      categoryId: 1, // Default category, you can map this from product.category
+      categoryId: getCategoryId(product.category), // Map category name to ID
       hostId: 1, // Default host
       name: product.name,
       description: product.description || '',
@@ -61,7 +80,7 @@ router.get('/:id', async (req, res) => {
     // Format to match frontend Product interface
     const formattedProduct = {
       id: parseInt(product.id),
-      categoryId: 1,
+      categoryId: getCategoryId(product.category), // Map category name to ID
       hostId: 1,
       name: product.name,
       description: product.description || '',
