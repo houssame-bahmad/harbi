@@ -275,7 +275,7 @@ const Navbar = () => {
   return (
     <nav className="bg-white sticky top-0 z-50">
       {/* Top Banner */}
-      <div className="bg-[#ec4249] text-white py-2">
+      <div className="bg-[#2563eb] text-white py-2">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center text-sm">
             <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -295,12 +295,12 @@ const Navbar = () => {
             <div className="flex items-center space-x-3 w-full lg:w-auto justify-between lg:justify-start">
               <Link to="/" className="text-2xl font-bold flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-md">
-                  <path d="M12 2L4 5V11.09C4 16.14 7.41 20.85 12 22C16.59 20.85 20 16.14 20 11.09V5L12 2Z" fill="#ec4249" opacity="0.2"/>
-                  <path d="M12 2L4 5V11.09C4 16.14 7.41 20.85 12 22C16.59 20.85 20 16.14 20 11.09V5L12 2Z" stroke="#ec4249" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12 2L4 5V11.09C4 16.14 7.41 20.85 12 22C16.59 20.85 20 16.14 20 11.09V5L12 2Z" fill="#2563eb" opacity="0.2"/>
+                  <path d="M12 2L4 5V11.09C4 16.14 7.41 20.85 12 22C16.59 20.85 20 16.14 20 11.09V5L12 2Z" stroke="#2563eb" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   <path d="M9 12L11 14L15 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 <div className="flex flex-col">
-                  <span className="text-xl leading-tight" style={{ color: '#ec4249' }}>Parapharmacie</span>
+                  <span className="text-xl leading-tight" style={{ color: '#2563eb' }}>Parapharmacie</span>
                   <span className="hidden sm:block text-[10px] text-gray-500 font-normal -mt-1">Santé & Bien-être</span>
                 </div>
               </Link>
@@ -314,10 +314,10 @@ const Navbar = () => {
                     value={query} 
                     onChange={(e) => setQuery(e.target.value)} 
                     placeholder="Rechercher un produit, une marque..." 
-                    className="w-full px-4 py-2.5 rounded-l-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#ec4249]/30 focus:border-[#ec4249] transition-all" 
+                    className="w-full px-4 py-2.5 rounded-l-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30 focus:border-[#2563eb] transition-all" 
                   />
                 </div>
-                <Button type="submit" size="md" className="rounded-l-none rounded-r-lg px-4" style={{ backgroundColor: '#ec4249' }}>
+                <Button type="submit" size="md" className="rounded-l-none rounded-r-lg px-4" style={{ backgroundColor: '#2563eb' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
@@ -352,7 +352,7 @@ const Navbar = () => {
                 <>
                   {/* User Greeting */}
                   <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
-                    <svg className="w-5 h-5" style={{ color: '#ec4249' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5" style={{ color: '#2563eb' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                     <span className="text-sm font-medium text-gray-700">
@@ -363,21 +363,21 @@ const Navbar = () => {
                   {/* Role-based Navigation - Admin Menu */}
                   {user.role === UserRole.ADMIN && (
                     <>
-                      <Link to="/admin" className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-[#ec4249] rounded-lg transition-all">
+                      <Link to="/admin" className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-[#2563eb] rounded-lg transition-all">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
                         <span className="hidden lg:inline">Admin</span>
                       </Link>
                       
-                      <Link to="/products" className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-[#ec4249] rounded-lg transition-all">
+                      <Link to="/products" className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-[#2563eb] rounded-lg transition-all">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                         </svg>
                         <span className="hidden lg:inline">Produits</span>
                       </Link>
                       
-                      <Link to="/admin/banners" className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-[#ec4249] rounded-lg transition-all">
+                      <Link to="/admin/banners" className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-[#2563eb] rounded-lg transition-all">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
@@ -387,7 +387,7 @@ const Navbar = () => {
                   )}
                   
                   {user.role === UserRole.USER && (
-                    <Link to="/orders" className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-[#ec4249] rounded-lg transition-all">
+                    <Link to="/orders" className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-[#2563eb] rounded-lg transition-all">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                       </svg>
@@ -398,14 +398,14 @@ const Navbar = () => {
                   {/* Cart Button */}
                   <button 
                     onClick={() => navigate('/cart')} 
-                    className="relative flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-[#ec4249] hover:bg-gray-50 rounded-lg transition-all"
+                    className="relative flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-[#2563eb] hover:bg-gray-50 rounded-lg transition-all"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                     <span className="hidden md:inline">Panier</span>
                     {cartCount > 0 && (
-                      <span className="absolute -top-1 -right-1 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-md" style={{ backgroundColor: '#ec4249' }}>
+                      <span className="absolute -top-1 -right-1 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-md" style={{ backgroundColor: '#2563eb' }}>
                         {cartCount}
                       </span>
                     )}
@@ -414,7 +414,7 @@ const Navbar = () => {
                   {/* Logout Button */}
                   <button 
                     onClick={logout} 
-                    className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 hover:text-[#ec4249] hover:bg-gray-50 rounded-lg transition-all"
+                    className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 hover:text-[#2563eb] hover:bg-gray-50 rounded-lg transition-all"
                     title="Déconnexion"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -423,7 +423,7 @@ const Navbar = () => {
                   </button>
                 </>
               ) : (
-                <Button onClick={() => navigate('/login')} className="px-6" style={{ backgroundColor: '#ec4249' }}>
+                <Button onClick={() => navigate('/login')} className="px-6" style={{ backgroundColor: '#2563eb' }}>
                   <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                   </svg>
@@ -450,15 +450,15 @@ const Navbar = () => {
                   onClick={() => navigate(`/?category=${category.slug}`)}
                   className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-all ${
                     category.name === 'PROMOTION' 
-                      ? 'text-[#ec4249] font-bold'
-                      : 'text-gray-700 hover:text-[#ec4249]'
+                      ? 'text-[#2563eb] font-bold'
+                      : 'text-gray-700 hover:text-[#2563eb]'
                   }`}
                 >
                   {category.name}
                 </button>
                 
                 {/* Underline effect */}
-                <div className={`absolute bottom-0 left-0 right-0 h-0.5 bg-[#ec4249] transform origin-center transition-transform ${
+                <div className={`absolute bottom-0 left-0 right-0 h-0.5 bg-[#2563eb] transform origin-center transition-transform ${
                   activeCategory === category.slug ? 'scale-x-100' : 'scale-x-0'
                 }`}></div>
               </div>
@@ -483,7 +483,7 @@ const Layout: React.FC = () => {
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <svg className="w-8 h-8" style={{ color: '#ec4249' }} fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-8 h-8" style={{ color: '#2563eb' }} fill="currentColor" viewBox="0 0 20 20">
                   <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
                 </svg>
                 <div>
@@ -492,7 +492,7 @@ const Layout: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <svg className="w-8 h-8" style={{ color: '#ec4249' }} fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-8 h-8" style={{ color: '#2563eb' }} fill="currentColor" viewBox="0 0 20 20">
                   <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
                   <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
                 </svg>
@@ -512,9 +512,9 @@ const Layout: React.FC = () => {
             <div>
               <h3 className="font-bold text-gray-900 mb-4">Nos Produits</h3>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li><a href="/?category=promotion" className="hover:text-[#ec4249] transition-colors">Promotions</a></li>
-                <li><a href="/?new=true" className="hover:text-[#ec4249] transition-colors">Nouveaux produits</a></li>
-                <li><a href="/?bestsellers=true" className="hover:text-[#ec4249] transition-colors">Meilleures ventes</a></li>
+                <li><a href="/?category=promotion" className="hover:text-[#2563eb] transition-colors">Promotions</a></li>
+                <li><a href="/?new=true" className="hover:text-[#2563eb] transition-colors">Nouveaux produits</a></li>
+                <li><a href="/?bestsellers=true" className="hover:text-[#2563eb] transition-colors">Meilleures ventes</a></li>
               </ul>
             </div>
             
@@ -522,11 +522,11 @@ const Layout: React.FC = () => {
             <div>
               <h3 className="font-bold text-gray-900 mb-4">Infos Pratiques</h3>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li><a href="/livraison" className="hover:text-[#ec4249] transition-colors">Livraison</a></li>
-                <li><a href="/mentions-legales" className="hover:text-[#ec4249] transition-colors">Mentions légales</a></li>
-                <li><a href="/conditions" className="hover:text-[#ec4249] transition-colors">Conditions d'utilisation</a></li>
-                <li><a href="/about" className="hover:text-[#ec4249] transition-colors">Qui sommes nous</a></li>
-                <li><a href="/paiement" className="hover:text-[#ec4249] transition-colors">Paiement sécurisé</a></li>
+                <li><a href="/livraison" className="hover:text-[#2563eb] transition-colors">Livraison</a></li>
+                <li><a href="/mentions-legales" className="hover:text-[#2563eb] transition-colors">Mentions légales</a></li>
+                <li><a href="/conditions" className="hover:text-[#2563eb] transition-colors">Conditions d'utilisation</a></li>
+                <li><a href="/about" className="hover:text-[#2563eb] transition-colors">Qui sommes nous</a></li>
+                <li><a href="/paiement" className="hover:text-[#2563eb] transition-colors">Paiement sécurisé</a></li>
               </ul>
             </div>
             
@@ -534,7 +534,7 @@ const Layout: React.FC = () => {
             <div>
               <h3 className="font-bold text-gray-900 mb-4">Nous Connaitre</h3>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li><Link to="/contact" className="hover:text-[#ec4249] transition-colors">Contactez-nous</Link></li>
+                <li><Link to="/contact" className="hover:text-[#2563eb] transition-colors">Contactez-nous</Link></li>
               </ul>
             </div>
             
@@ -542,9 +542,9 @@ const Layout: React.FC = () => {
             <div>
               <h3 className="font-bold text-gray-900 mb-4">Votre Compte</h3>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li><Link to="/login" className="hover:text-[#ec4249] transition-colors">Informations personnelles</Link></li>
-                <li><Link to="/orders" className="hover:text-[#ec4249] transition-colors">Commandes</Link></li>
-                <li><Link to="/cart" className="hover:text-[#ec4249] transition-colors">Panier</Link></li>
+                <li><Link to="/login" className="hover:text-[#2563eb] transition-colors">Informations personnelles</Link></li>
+                <li><Link to="/orders" className="hover:text-[#2563eb] transition-colors">Commandes</Link></li>
+                <li><Link to="/cart" className="hover:text-[#2563eb] transition-colors">Panier</Link></li>
               </ul>
             </div>
             
@@ -552,19 +552,19 @@ const Layout: React.FC = () => {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2L4 5V11.09C4 16.14 7.41 20.85 12 22C16.59 20.85 20 16.14 20 11.09V5L12 2Z" fill="#ec4249" opacity="0.3"/>
-                  <path d="M9 12L11 14L15 10" stroke="#ec4249" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12 2L4 5V11.09C4 16.14 7.41 20.85 12 22C16.59 20.85 20 16.14 20 11.09V5L12 2Z" fill="#2563eb" opacity="0.3"/>
+                  <path d="M9 12L11 14L15 10" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span className="text-xl font-bold" style={{ color: '#ec4249' }}>Parapharmacie</span>
+                <span className="text-xl font-bold" style={{ color: '#2563eb' }}>Parapharmacie</span>
               </div>
               <h3 className="font-bold text-gray-900 mb-3">Suivez-nous</h3>
               <div className="flex gap-3">
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 hover:bg-[#ec4249] hover:text-white flex items-center justify-center transition-all">
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 hover:bg-[#2563eb] hover:text-white flex items-center justify-center transition-all">
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                   </svg>
                 </a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 hover:bg-[#ec4249] hover:text-white flex items-center justify-center transition-all">
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 hover:bg-[#2563eb] hover:text-white flex items-center justify-center transition-all">
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                   </svg>
@@ -658,7 +658,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
       <Card className="flex flex-col h-full product-card group">
         <Link to={`/product/${product.id}`} className="block overflow-hidden relative">
           {discountPercent > 0 && (
-            <div className="absolute top-2 left-2 z-10 bg-[#ec4249] text-white text-xs font-bold px-2 py-1 rounded-md">
+            <div className="absolute top-2 left-2 z-10 bg-[#2563eb] text-white text-xs font-bold px-2 py-1 rounded-md">
               -{discountPercent}%
             </div>
           )}
@@ -675,7 +675,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
           <div className="mt-auto">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold" style={{ color: '#ec4249' }}>{formatPrice(product.price)}</span>
+                <span className="text-2xl font-bold" style={{ color: '#2563eb' }}>{formatPrice(product.price)}</span>
               </div>
               <div className="text-xs text-gray-500">
                 {product.stockQuantity > 0 ? (
@@ -690,14 +690,14 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
             </div>
             
             <div className="flex gap-2">
-              <Button onClick={() => setIsModalOpen(true)} variant="ghost" size="sm" className="flex-1 text-gray-700 hover:text-[#ec4249]">
+              <Button onClick={() => setIsModalOpen(true)} variant="ghost" size="sm" className="flex-1 text-gray-700 hover:text-[#2563eb]">
                 <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
                 Voir
               </Button>
-              <Button onClick={handleAddToCart} size='sm' className="flex-1" style={{ backgroundColor: '#ec4249' }} disabled={product.stockQuantity <= 0}>
+              <Button onClick={handleAddToCart} size='sm' className="flex-1" style={{ backgroundColor: '#2563eb' }} disabled={product.stockQuantity <= 0}>
                 <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
@@ -1058,7 +1058,7 @@ const HomePage: React.FC = () => {
         <div className="w-full lg:w-1/4 flex flex-col gap-4">
             {/* Top Promo Banner */}
             <div className="relative h-[145px] lg:h-[218px] rounded-2xl overflow-hidden group cursor-pointer">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#ec4249] to-red-600"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-[#2563eb] to-blue-700"></div>
               <div className="relative h-full flex flex-col items-center justify-center p-6 text-white text-center">
                 <svg className="w-12 h-12 mb-2 opacity-90" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
@@ -1091,7 +1091,7 @@ const HomePage: React.FC = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Paiement sécurisé */}
           <div className="flex flex-col items-center text-center">
-            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mb-3 shadow-md" style={{ color: '#ec4249' }}>
+            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mb-3 shadow-md" style={{ color: '#2563eb' }}>
               <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/>
                 <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd"/>
@@ -1103,7 +1103,7 @@ const HomePage: React.FC = () => {
 
           {/* Livraison offerte */}
           <div className="flex flex-col items-center text-center">
-            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mb-3 shadow-md" style={{ color: '#ec4249' }}>
+            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mb-3 shadow-md" style={{ color: '#2563eb' }}>
               <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
                 <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z"/>
@@ -1115,7 +1115,7 @@ const HomePage: React.FC = () => {
 
           {/* Produits certifiés */}
           <div className="flex flex-col items-center text-center">
-            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mb-3 shadow-md" style={{ color: '#ec4249' }}>
+            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mb-3 shadow-md" style={{ color: '#2563eb' }}>
               <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
               </svg>
@@ -1126,7 +1126,7 @@ const HomePage: React.FC = () => {
 
           {/* Confidentialité */}
           <div className="flex flex-col items-center text-center">
-            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mb-3 shadow-md" style={{ color: '#ec4249' }}>
+            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mb-3 shadow-md" style={{ color: '#2563eb' }}>
               <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
               </svg>
@@ -1148,7 +1148,7 @@ const HomePage: React.FC = () => {
           >
             <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-2 transition-all ${
               selectedCategory === null 
-                ? 'bg-[#ec4249] text-white shadow-lg scale-105' 
+                ? 'bg-[#2563eb] text-white shadow-lg scale-105' 
                 : 'bg-gray-100 text-gray-700 group-hover:bg-gray-200'
             }`}>
               <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1156,7 +1156,7 @@ const HomePage: React.FC = () => {
               </svg>
             </div>
             <span className={`text-xs font-medium ${
-              selectedCategory === null ? 'text-white' : 'text-gray-700 group-hover:text-[#ec4249]'
+              selectedCategory === null ? 'text-white' : 'text-gray-700 group-hover:text-[#2563eb]'
             }`}>
               Tous
             </span>
@@ -1169,13 +1169,13 @@ const HomePage: React.FC = () => {
             >
               <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-2 transition-all ${
                 selectedCategory === c.id 
-                  ? 'bg-[#ec4249] text-white shadow-lg scale-105' 
+                  ? 'bg-[#2563eb] text-white shadow-lg scale-105' 
                   : 'bg-gray-100 text-gray-700 group-hover:bg-gray-200'
               }`}>
                 {getCategoryIcon(c.name)}
               </div>
               <span className={`text-xs font-medium text-center max-w-[100px] ${
-                selectedCategory === c.id ? 'text-[#ec4249]' : 'text-gray-700 group-hover:text-[#ec4249]'
+                selectedCategory === c.id ? 'text-[#2563eb]' : 'text-gray-700 group-hover:text-[#2563eb]'
               }`}>{c.name}</span>
             </button>
           ))}
@@ -1218,14 +1218,14 @@ const HomePage: React.FC = () => {
         <div className="flex items-center justify-center gap-8 flex-wrap">
           {['AVÈNE', 'EUCERIN', 'NUXE', 'FILORGA', 'CAUDALIE', 'LA ROCHE-POSAY'].map((brand) => (
             <div key={brand} className="flex items-center justify-center w-32 h-20 bg-white rounded-lg shadow-sm hover:shadow-md transition-all group cursor-pointer">
-              <span className="text-lg font-bold text-gray-400 group-hover:text-[#ec4249] transition-colors">{brand}</span>
+              <span className="text-lg font-bold text-gray-400 group-hover:text-[#2563eb] transition-colors">{brand}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* Newsletter */}
-      <div className="bg-gradient-to-r from-[#ec4249] to-red-600 rounded-2xl p-8 md:p-12 text-white text-center">
+      <div className="bg-gradient-to-r from-[#2563eb] to-blue-700 rounded-2xl p-8 md:p-12 text-white text-center">
         <h3 className="text-3xl font-bold mb-3">Recevez nos offres spéciales</h3>
         <p className="text-lg mb-6 opacity-90">Inscrivez-vous à notre newsletter et profitez de promotions exclusives</p>
         <form className="max-w-md mx-auto flex gap-3">
@@ -1236,7 +1236,7 @@ const HomePage: React.FC = () => {
           />
           <button 
             type="submit" 
-            className="px-6 py-3 bg-white text-[#ec4249] font-bold rounded-lg hover:bg-gray-100 transition-all"
+            className="px-6 py-3 bg-white text-[#2563eb] font-bold rounded-lg hover:bg-gray-100 transition-all"
           >
             S'abonner
           </button>
@@ -1917,12 +1917,12 @@ const ProductForm: React.FC<{ product?: Product; onSave: (product: Product) => v
                         className="flex-1 mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                     >
                         {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        <option value="add-new" style={{ fontWeight: 'bold', color: '#ec4249' }}>+ Add New Category</option>
+                        <option value="add-new" style={{ fontWeight: 'bold', color: '#2563eb' }}>+ Add New Category</option>
                     </select>
                     <button
                         type="button"
                         onClick={() => setShowAddCategory(true)}
-                        className="mt-1 px-4 py-2 bg-[#ec4249] text-white rounded-md hover:bg-[#d63940] transition-colors"
+                        className="mt-1 px-4 py-2 bg-[#2563eb] text-white rounded-md hover:bg-[#1d4ed8] transition-colors"
                     >
                         +
                     </button>
@@ -1946,7 +1946,7 @@ const ProductForm: React.FC<{ product?: Product; onSave: (product: Product) => v
                             <button
                                 type="button"
                                 onClick={handleAddCategory}
-                                className="flex-1 px-4 py-2 bg-[#ec4249] text-white rounded-md hover:bg-[#d63940] transition-colors"
+                                className="flex-1 px-4 py-2 bg-[#2563eb] text-white rounded-md hover:bg-[#1d4ed8] transition-colors"
                             >
                                 Add Category
                             </button>
@@ -2850,11 +2850,11 @@ const BannerManagementPage: React.FC = () => {
       try {
         await api.deleteBanner(id);
         await loadBanners();
-        alert('✅ Banner deleted successfully!');
+        alert('Banner deleted successfully!');
       } catch (error: any) {
         console.error('Error deleting banner:', error);
         const errorMsg = error?.message || 'Failed to delete banner';
-        alert(`❌ Error: ${errorMsg}\n\nPlease ensure you are logged in as admin.`);
+        alert(`Error: ${errorMsg}\n\nPlease ensure you are logged in as admin.`);
       }
     }
   };
@@ -2902,17 +2902,17 @@ const BannerManagementPage: React.FC = () => {
         const dataUrl = event.target?.result as string;
         setFormData({ ...formData, imageUrl: dataUrl });
         setUploadingImage(false);
-        alert('✅ Image loaded successfully! You can now save the banner.');
+        alert('Image loaded successfully! You can now save the banner.');
       };
       reader.onerror = () => {
-        alert('❌ Failed to read image file');
+        alert('Failed to read image file');
         setUploadingImage(false);
       };
       reader.readAsDataURL(file);
       
     } catch (error: any) {
       console.error('Image upload error:', error);
-      alert(`❌ Failed to process image: ${error?.message || 'Unknown error'}`);
+      alert(`Failed to process image: ${error?.message || 'Unknown error'}`);
       setUploadingImage(false);
     }
   };
@@ -3032,7 +3032,7 @@ const BannerManagementPage: React.FC = () => {
                 <span className="font-semibold">Order:</span> {banner.displayOrder}
               </span>
               <span className={`text-sm font-semibold ${banner.isActive ? 'text-green-600' : 'text-red-600'}`}>
-                {banner.isActive ? '✅ Active' : '❌ Inactive'}
+                {banner.isActive ? 'Active' : 'Inactive'}
               </span>
             </div>
           </div>
@@ -3296,3 +3296,4 @@ export default function App() {
     </AuthProvider>
   );
 }
+
