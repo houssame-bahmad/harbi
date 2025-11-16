@@ -254,6 +254,7 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const { cartCount } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
@@ -439,30 +440,38 @@ const Navbar = () => {
       <div className="bg-white border-b border-gray-200">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center gap-1 overflow-x-auto">
-            {categories.map((category) => (
-              <div
-                key={category.slug}
-                className="relative group"
-                onMouseEnter={() => setActiveCategory(category.slug)}
-                onMouseLeave={() => setActiveCategory(null)}
-              >
-                <button
-                  onClick={() => navigate(`/?category=${category.slug}`)}
-                  className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-all ${
-                    category.name === 'PROMOTION' 
-                      ? 'text-[#2563eb] font-bold'
-                      : 'text-gray-700 hover:text-[#2563eb]'
-                  }`}
+            {categories.map((category) => {
+              const params = new URLSearchParams(location.search);
+              const currentCategoryId = params.get('category');
+              const isActive = currentCategoryId === category.id.toString();
+              
+              return (
+                <div
+                  key={category.slug}
+                  className="relative group"
+                  onMouseEnter={() => setActiveCategory(category.slug)}
+                  onMouseLeave={() => setActiveCategory(null)}
                 >
-                  {category.name}
-                </button>
-                
-                {/* Underline effect */}
-                <div className={`absolute bottom-0 left-0 right-0 h-0.5 bg-[#2563eb] transform origin-center transition-transform ${
-                  activeCategory === category.slug ? 'scale-x-100' : 'scale-x-0'
-                }`}></div>
-              </div>
-            ))}
+                  <button
+                    onClick={() => navigate(`/?category=${category.id}`)}
+                    className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-all ${
+                      isActive
+                        ? 'text-[#2563eb] font-bold'
+                        : category.name === 'PROMOTION' 
+                          ? 'text-[#2563eb] font-bold'
+                          : 'text-gray-700 hover:text-[#2563eb]'
+                    }`}
+                  >
+                    {category.name}
+                  </button>
+                  
+                  {/* Underline effect */}
+                  <div className={`absolute bottom-0 left-0 right-0 h-0.5 bg-[#2563eb] transform origin-center transition-transform ${
+                    isActive || activeCategory === category.slug ? 'scale-x-100' : 'scale-x-0'
+                  }`}></div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
