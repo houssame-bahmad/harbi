@@ -56,6 +56,8 @@ router.post('/add', authMiddleware, async (req, res) => {
   try {
     const { productId, quantity = 1 } = req.body;
 
+    console.log('🛒 POST /cart/add - User ID:', req.user?.id, 'Product ID:', productId, 'Quantity:', quantity);
+
     if (!productId) {
       return res.status(400).json({
         error: { message: 'Product ID is required' }
@@ -67,6 +69,8 @@ router.post('/add', authMiddleware, async (req, res) => {
       'SELECT id, stock FROM products WHERE id = ?',
       [productId]
     );
+
+    console.log('📦 Product found:', products.length > 0, 'Stock:', products[0]?.stock);
 
     if (products.length === 0) {
       return res.status(404).json({
@@ -86,19 +90,25 @@ router.post('/add', authMiddleware, async (req, res) => {
       [req.user.id, productId]
     );
 
+    console.log('🔍 Existing cart item:', existing.length > 0 ? 'Yes' : 'No', existing[0]);
+
     if (existing.length > 0) {
       // Update quantity
       const newQuantity = existing[0].quantity + quantity;
+      console.log('📝 Updating quantity from', existing[0].quantity, 'to', newQuantity);
       await db.query(
         'UPDATE cart_items SET quantity = ? WHERE id = ?',
         [newQuantity, existing[0].id]
       );
+      console.log('✅ Quantity updated');
     } else {
       // Insert new cart item
+      console.log('➕ Inserting new cart item');
       await db.query(
         'INSERT INTO cart_items (user_id, product_id, quantity) VALUES (?, ?, ?)',
         [req.user.id, productId, quantity]
       );
+      console.log('✅ New item inserted');
     }
 
     // Return updated cart
@@ -117,11 +127,22 @@ router.post('/add', authMiddleware, async (req, res) => {
       WHERE c.user_id = ?
     `, [req.user.id]);
 
+    console.log('✅ Cart items returned:', cartItems.length);
     res.json({ message: 'Item added to cart', cart: cartItems });
   } catch (error) {
-    console.error('Add to cart error:', error);
+    console.error('❌ Add to cart error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      sqlMessage: error.sqlMessage,
+      errno: error.errno
+    });
     res.status(500).json({
-      error: { message: 'Failed to add item to cart', status: 500 }
+      error: { 
+        message: 'Failed to add item to cart', 
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        status: 500 
+      }
     });
   }
 });
