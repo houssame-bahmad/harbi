@@ -6,6 +6,16 @@ const { authMiddleware } = require('../middleware/auth');
 // Get user's cart
 router.get('/', authMiddleware, async (req, res) => {
   try {
+    console.log('🛒 GET /cart - User ID:', req.user?.id);
+    console.log('🛒 User object:', req.user);
+    
+    if (!req.user || !req.user.id) {
+      console.error('❌ No user ID found in request');
+      return res.status(401).json({
+        error: { message: 'User not authenticated', status: 401 }
+      });
+    }
+    
     const [cartItems] = await db.query(`
       SELECT 
         c.id as cart_item_id,
@@ -21,16 +31,22 @@ router.get('/', authMiddleware, async (req, res) => {
       WHERE c.user_id = ?
     `, [req.user.id]);
 
+    console.log('✅ Cart items found:', cartItems.length);
     res.json(cartItems);
   } catch (error) {
-    console.error('Get cart error:', error);
+    console.error('❌ Get cart error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      sqlMessage: error.sqlMessage
+    });
     // If cart_items table doesn't exist yet, return empty cart
     if (error.code === 'ER_NO_SUCH_TABLE') {
       console.warn('⚠️  cart_items table does not exist. Please run the migration: CART-MIGRATION-PHPMYADMIN.sql');
       return res.json([]);
     }
     res.status(500).json({
-      error: { message: 'Failed to get cart', status: 500 }
+      error: { message: 'Failed to get cart', details: error.message, status: 500 }
     });
   }
 });

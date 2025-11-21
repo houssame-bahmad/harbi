@@ -65,8 +65,13 @@ const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(response.user));
       setIsLoading(false);
       return true;
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      console.error('❌ Registration failed:');
+      console.error('   Message:', error?.message);
+      console.error('   Status:', error?.status);
+      console.error('   Details:', error?.details);
+      console.error('   Validation Errors:', error?.validationErrors);
+      console.error('   Full error object:', error);
       setIsLoading(false);
       return false;
     }
@@ -115,27 +120,41 @@ const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         return;
       }
 
-      try {
-        setLoading(true);
-        const cartData = await api.getCart();
-        // Map backend response to CartItem format
-        const formattedCart = cartData.map((item: any) => ({
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          imageUrl: item.imageUrl,
-          description: item.description,
-          stockQuantity: item.stockQuantity,
-          quantity: item.quantity,
-          cart_item_id: item.cart_item_id, // Store for updates/deletes
-        }));
-        setCart(formattedCart);
-      } catch (error) {
-        console.error('Failed to load cart:', error);
-        setCart([]);
-      } finally {
-        setLoading(false);
-      }
+      const tryGetCart = async (attempt = 1): Promise<boolean> => {
+        try {
+          setLoading(true);
+          const cartData = await api.getCart();
+          // Map backend response to CartItem format
+          const formattedCart = cartData.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            imageUrl: item.imageUrl,
+            description: item.description,
+            stockQuantity: item.stockQuantity,
+            quantity: item.quantity,
+            cart_item_id: item.cart_item_id, // Store for updates/deletes
+          }));
+          setCart(formattedCart);
+          return true;
+        } catch (error: any) {
+          console.error(`Failed to load cart (attempt ${attempt}):`, error);
+          // Retry once on server error (5xx)
+          if (attempt < 2 && error?.message?.includes('500')) {
+            console.log('🔄 Retrying cart load after 800ms...');
+            await new Promise(res => setTimeout(res, 800));
+            return tryGetCart(attempt + 1);
+          }
+          // Fallback to empty cart so UI remains usable
+          console.warn('⚠️  Cart load failed, using empty cart');
+          setCart([]);
+          return false;
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      tryGetCart();
     };
 
     loadCart();

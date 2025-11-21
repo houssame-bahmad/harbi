@@ -51,15 +51,29 @@ async function apiRequest(endpoint: string, options: RequestInit = {}) {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: { message: 'Request failed' } }));
-      const errorMessage = error.error?.message || error.error || error.errors?.[0]?.msg || `HTTP ${response.status}`;
+      
+      // Log full error response for debugging
+      console.log('   ❌ Full error response:', JSON.stringify(error, null, 2));
+      
+      // Handle both error.errors and errors at root level
+      const validationErrors = error.error?.errors || error.errors;
+      const errorMessage = error.error?.message || error.error || error.message || validationErrors?.[0]?.msg || `HTTP ${response.status}`;
       console.log('   ❌ Request failed:', errorMessage);
-      if (error.errors) {
-        console.log('   ❌ Validation errors:', error.errors);
+      
+      if (validationErrors && Array.isArray(validationErrors)) {
+        console.log('   ❌ Validation errors:', validationErrors);
         // Create detailed error message with all validation issues
-        const validationMessages = error.errors.map((e: any) => e.msg).join(', ');
-        throw new Error(`Validation failed: ${validationMessages}`);
+        const validationMessages = validationErrors.map((e: any) => `${e.path || e.field || 'field'}: ${e.msg}`).join('; ');
+        const err: any = new Error(`Validation failed: ${validationMessages}`);
+        err.details = error;
+        err.status = response.status;
+        err.validationErrors = validationErrors;
+        throw err;
       }
-      throw new Error(errorMessage);
+      const err: any = new Error(errorMessage);
+      err.status = response.status;
+      err.details = error;
+      throw err;
     }
 
     const data = await response.json();
