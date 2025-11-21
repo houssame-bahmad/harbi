@@ -119,16 +119,24 @@ router.post('/register',
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
 
+      // Generate UUID for user ID (to match VARCHAR(36) schema)
+      const { v4: uuidv4 } = require('uuid');
+      const userId = uuidv4();
+
+      console.log('📝 Creating user with ID:', userId);
+
       // Create user
       const [result] = await db.query(
-        'INSERT INTO users (email, password, full_name, phone, role) VALUES (?, ?, ?, ?, ?)',
-        [email, hashedPassword, fullName || '', phoneNumber || '', 'user']
+        'INSERT INTO users (id, email, password, full_name, phone, role) VALUES (?, ?, ?, ?, ?, ?)',
+        [userId, email, hashedPassword, fullName || '', phoneNumber || '', 'user']
       );
+
+      console.log('✅ User created successfully');
 
       // Generate JWT token
       const token = jwt.sign(
         { 
-          id: result.insertId, 
+          id: userId, 
           email: email, 
           role: 'user' 
         },
@@ -138,7 +146,7 @@ router.post('/register',
 
       res.status(201).json({
         user: {
-          id: result.insertId,
+          id: userId,
           email: email,
           role: 'user',
           fullName: fullName || '',
@@ -149,9 +157,20 @@ router.post('/register',
       });
 
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('❌ Registration error:', error);
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        sqlMessage: error.sqlMessage,
+        sqlState: error.sqlState,
+        errno: error.errno
+      });
       res.status(500).json({
-        error: { message: 'Registration failed', status: 500 }
+        error: { 
+          message: 'Registration failed', 
+          status: 500,
+          details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        }
       });
     }
   }
