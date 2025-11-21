@@ -25,7 +25,7 @@ router.get('/', authMiddleware, async (req, res) => {
         p.price,
         p.image_url as imageUrl,
         p.description,
-        p.stock_quantity as stockQuantity
+        p.stock as stockQuantity
       FROM cart_items c
       JOIN products p ON c.product_id = p.id
       WHERE c.user_id = ?
@@ -64,7 +64,7 @@ router.post('/add', authMiddleware, async (req, res) => {
 
     // Check if product exists and has stock
     const [products] = await db.query(
-      'SELECT id, stock_quantity FROM products WHERE id = ?',
+      'SELECT id, stock FROM products WHERE id = ?',
       [productId]
     );
 
@@ -74,7 +74,7 @@ router.post('/add', authMiddleware, async (req, res) => {
       });
     }
 
-    if (products[0].stock_quantity < quantity) {
+    if (products[0].stock < quantity) {
       return res.status(400).json({
         error: { message: 'Insufficient stock' }
       });
@@ -111,7 +111,7 @@ router.post('/add', authMiddleware, async (req, res) => {
         p.price,
         p.image_url as imageUrl,
         p.description,
-        p.stock_quantity as stockQuantity
+        p.stock as stockQuantity
       FROM cart_items c
       JOIN products p ON c.product_id = p.id
       WHERE c.user_id = ?
@@ -165,7 +165,7 @@ router.put('/update/:cartItemId', authMiddleware, async (req, res) => {
         p.price,
         p.image_url as imageUrl,
         p.description,
-        p.stock_quantity as stockQuantity
+        p.stock as stockQuantity
       FROM cart_items c
       JOIN products p ON c.product_id = p.id
       WHERE c.user_id = ?
@@ -207,7 +207,7 @@ router.delete('/remove/:cartItemId', authMiddleware, async (req, res) => {
         p.price,
         p.image_url as imageUrl,
         p.description,
-        p.stock_quantity as stockQuantity
+        p.stock as stockQuantity
       FROM cart_items c
       JOIN products p ON c.product_id = p.id
       WHERE c.user_id = ?
